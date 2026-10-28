@@ -1,4 +1,5 @@
 import time
+import struct
 import rclpy
 from rclpy.parameter import Parameter
 from std_msgs.msg import Float64MultiArray
@@ -25,9 +26,13 @@ def test_ros_callbacks_synthetic_feedback_only():
         feedback.per_axis_rx_done_monotonic_ns = [t]*6
         node.on_feedback(feedback)
         assert all(abs(x - .001) < 1e-9 for x in node.pid.output)
+        assert len(node.pipeline.backend.frames) == 1
+        assert all(abs(x - .001) < 1e-9 for x in struct.unpack('!6d', node.pipeline.backend.frames[0]))
         feedback.fault_codes = [1, 0, 0, 0, 0, 0]
         node.on_feedback(feedback)
         assert node.latched and node.pid.output == [0]*6
+        assert node.pipeline.backend.stops == 1
+        assert node.pipeline.backend.hardware_write_count == 0
         assert node.publisher.topic_name == '/joint_torque_pid_offline/diagnostics'
     finally:
         node.destroy_node()

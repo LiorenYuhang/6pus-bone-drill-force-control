@@ -6,7 +6,7 @@ The research PID computes six motor torque values in N·m from six actuator-leng
 
 **Status: offline only.** The local actuator documentation does not establish the motor-shaft torque command interface. No real torque command is encoded, transmitted or enabled; the documented actuator force-control target is not a motor torque interface. The experiment is not hardware qualified.
 
-`bone_ws/scripts/research/joint_torque_pid/` contains the independent PID, a ROS 2 diagnostic-only node and a strictly in-memory mock pipeline. The mock's six-float format is a test fixture, not a motor protocol. Its mode exclusion is local to one mock pipeline and does not protect shared physical hardware. It cannot replace a sole serial owner, verified interprocess mode transition, or real device stop. A timeout or fault in the mock does not stop a motor. See [the research report](docs/research/6PUS_JOINT_TORQUE_PID_RESEARCH.md).
+`bone_ws/scripts/research/joint_torque_pid/` contains the independent PID, a ROS 2 diagnostic-only node and a strictly in-memory mock pipeline. When explicitly enabled, its synthetic feedback callback drives that mock pipeline. The mock's six-float format is a test fixture, not a motor protocol. Its mode exclusion is local to one mock pipeline and does not protect shared physical hardware. It cannot replace a sole serial owner, verified interprocess mode transition, or real device stop. A timeout or fault in the mock does not stop a motor. See [the research report](docs/research/6PUS_JOINT_TORQUE_PID_RESEARCH.md).
 
 ## Layout and offline tests
 

@@ -11,6 +11,7 @@ from rclpy.node import Node
 from std_msgs.msg import Float64MultiArray, String
 from pus6_msgs.msg import TimedJointFeedback
 from controller import Config, JointTorquePID, Fault
+from mock_pipeline import MockBackend, MockPipeline, Mode
 
 
 class OfflineNode(Node):
@@ -31,11 +32,14 @@ class OfflineNode(Node):
         self.latched = False
         self.timeout = float(get('target_timeout_s'))
         self.pid = None
+        self.pipeline = None
         if self.enabled:
             if not 0 < self.timeout < float('inf'): raise ValueError('invalid target timeout')
             self.pid = JointTorquePID(Config(tuple(get('kp')), tuple(get('ki')), tuple(get('kd')),
                 tuple(get('torque_limit_nm')), tuple(get('slew_limit_nm_s')), tuple(get('direction')),
                 get('min_dt_s'), get('max_dt_s'), get('max_feedback_age_s'), get('derivative_tau_s')))
+            self.pipeline = MockPipeline(self.pid, MockBackend())
+            self.pipeline.enter(Mode.TORQUE)
         self.publisher = self.create_publisher(String, '~/diagnostics', 10)
         self.create_subscription(Float64MultiArray, '~/desired_positions_m', self.on_target, 10)
         self.create_subscription(TimedJointFeedback, '~/synthetic_feedback', self.on_feedback, 10)
@@ -49,6 +53,8 @@ class OfflineNode(Node):
 
     def fail(self, reason):
         self.latched = True
+        if self.pipeline:
+            self.pipeline.stop(reason)
         if self.pid:
             try: self.pid.trip(reason)
             except Fault: pass
@@ -68,9 +74,9 @@ class OfflineNode(Node):
         if (now - self.target_ns) * 1e-9 > self.timeout:
             self.fail('stale target'); return
         try:
-            self.pid.update(self.target, msg.positions_meters,
-                            list(msg.per_axis_rx_done_monotonic_ns), now, msg.fault_codes)
-        except Fault as exc:
+            self.pipeline.torque_cycle(self.target, msg.positions_meters,
+                                       list(msg.per_axis_rx_done_monotonic_ns), now, msg.fault_codes)
+        except (Fault, OSError) as exc:
             self.fail(exc); return
         self.last_feedback_ns = now
         self.publish(self.pid.state)
