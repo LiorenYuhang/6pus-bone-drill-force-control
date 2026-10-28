@@ -3,7 +3,7 @@
 import time
 import rclpy
 from rclpy.node import Node
-from pus6_research_msgs.msg import RawMotorStatus, ForceFeedback
+from pus6_research_msgs.msg import RawMotorStatus, ForceFeedback, RawForceFeedback
 from pus6_msgs.msg import TimedJointFeedback
 from pus6_kinematics.geometry_config import load_geometry_config
 from std_msgs.msg import String
@@ -35,6 +35,7 @@ class ForceStatusNode(Node):
         source={'mock':1,'hardware':2}.get(self.get_parameter('source').value)
         self.assembler=StatusAssembler(source,self.get_parameter('gram_force_confirmed').value,float(self.get_parameter('max_age_s').value))
         self.pub=self.create_publisher(ForceFeedback,'/research_force_torque_mock/force_feedback',10)
+        self.raw_pub=self.create_publisher(RawForceFeedback,'/research_force_torque_mock/raw_force_feedback',10)
         self.diag=self.create_publisher(String,'~/diagnostics',10)
         self.position_pub=self.create_publisher(TimedJointFeedback,'/research_force_torque_mock/position_feedback',10) if self.get_parameter('publish_position').value else None
         self.geometry=load_geometry_config() if self.position_pub else None
@@ -51,6 +52,10 @@ class ForceStatusNode(Node):
         msg=ForceFeedback(); msg.source=self.assembler.source; msg.header.stamp=self.get_clock().now().to_msg()
         msg.force_n=vals; msg.rx_monotonic_ns=ts; msg.valid=valid; msg.fault_codes=faults
         self.pub.publish(msg)
+        raw,adc,raw_ts,raw_valid,raw_faults=self.assembler.snapshot_raw(time.monotonic_ns())
+        raw_msg=RawForceFeedback(); raw_msg.source=self.assembler.source; raw_msg.header.stamp=self.get_clock().now().to_msg()
+        raw_msg.force_g_raw=raw; raw_msg.force_adc=adc; raw_msg.rx_monotonic_ns=raw_ts
+        raw_msg.valid=raw_valid; raw_msg.fault_codes=raw_faults; self.raw_pub.publish(raw_msg)
         if self.position_pub:
             rows=self.assembler.rows; now=time.monotonic_ns()
             if all(row is not None and 0<=now-row[0]<=self.assembler.max_age*1e9 for row in rows):

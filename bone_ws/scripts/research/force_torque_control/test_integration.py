@@ -104,7 +104,10 @@ def test_laf_injected_bus_never_opens_and_explicit_mode_only():
     adapter=LafForceAdapter(bus,[10.]*6,gram_force_confirmed=True)
     assert not bus.events
     with pytest.raises(RuntimeError): adapter.write_force(AxialForceN((1.,)*6))
-    adapter.set_force_mode_explicit()
+    with pytest.raises(TypeError): adapter.set_force_mode_explicit(TorqueNm((1.,)*6))
+    assert not bus.events
+    adapter.set_force_mode_explicit(AxialForceN((STANDARD_GRAVITY,)*6))
+    assert sum(e[2]==0x25 and e[3]==[3,0,1000] for e in bus.events)==6
     with pytest.raises(TypeError): adapter.write_force(TorqueNm((1.,)*6))
     with pytest.raises(ValueError): adapter.write_force(AxialForceN((-1.,)*6))
     adapter.write_force(AxialForceN((STANDARD_GRAVITY,)*6))
@@ -138,7 +141,7 @@ def test_laf_partial_write_fault_latches_and_never_retries():
     from status_bridge import LafForceAdapter
     from core import AxialForceN
     bus=MockForceBus(); adapter=LafForceAdapter(bus,[10.]*6,gram_force_confirmed=True)
-    adapter.set_force_mode_explicit(); bus.fail_on_id=3
+    adapter.set_force_mode_explicit(AxialForceN((0.,)*6)); bus.fail_on_id=3
     with pytest.raises(OSError): adapter.write_force(AxialForceN((1.,)*6))
     assert adapter.fault and not adapter.entered and adapter.pause_attempted
     attempts=bus.attempt_count
@@ -165,3 +168,27 @@ def test_status_position_requires_all_axes_to_advance():
         assert all(b>a for a,b in zip(captured[0].per_axis_rx_done_monotonic_ns,captured[1].per_axis_rx_done_monotonic_ns))
     finally:
         node.destroy_node(); rclpy.shutdown()
+
+def test_raw_force_is_not_calibrated_si_and_stales():
+    from dataclasses import replace
+    bus=MockForceBus(); bus.forces_g[1]=-1000
+    source=ReadOnlyStatusSource(bus,clock=lambda:1_000_000_000)
+    axis,raw,stamp=source.poll(1)
+    a=StatusAssembler(1,False,.2); a.ingest(axis,1,raw,stamp,stamp)
+    values,adc,times,valid,faults=a.snapshot_raw(stamp)
+    assert values[0]==-1000 and valid[0] and not a.snapshot(stamp)[2][0]
+    assert not a.snapshot_raw(stamp+300_000_000)[3][0]
+    t,status=a.rows[0]; a.rows[0]=(t,replace(status,force_adc=4096))
+    assert not a.snapshot_raw(stamp)[3][0]
+
+def test_force_mode_entry_failure_latches_and_does_not_retry():
+    from status_bridge import LafForceAdapter
+    from core import AxialForceN
+    bus=MockForceBus(); bus.fail_on_id=3
+    adapter=LafForceAdapter(bus,[10.]*6,gram_force_confirmed=True)
+    with pytest.raises(OSError): adapter.set_force_mode_explicit(AxialForceN((1.,)*6))
+    assert adapter.fault and adapter.pause_attempted and not adapter.entered
+    assert [e[0] for e in bus.events if e[2]==0x25]==[1,2,3]
+    count=bus.attempt_count
+    with pytest.raises(RuntimeError): adapter.set_force_mode_explicit(AxialForceN((1.,)*6))
+    assert bus.attempt_count==count and bus.hardware_write_count==0

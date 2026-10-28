@@ -27,6 +27,7 @@ def test_unified_synthetic_runtime(mode,kind,tmp_path):
     assert any(r['kind']=='imu' and isinstance(r['data'],dict) and len(r['data'].get('ik_lengths_m',[]))==6 for r in records)
     controls=[r['data'] for r in records if r['kind']=='control' and isinstance(r['data'],dict)]
     assert controls and all(d['actual_m']==pytest.approx([.05]*6) for d in controls)
+    assert any(d['raw_force'] is not None and d['raw_force']['source']==1 and all(d['raw_force']['valid']) for d in controls)
     assert all(all(t>0 for t in d['position_rx_ns']) for d in controls)
     assert all(d['hardware_write_count']==0 for d in controls)
     assert records[-1]['kind']=='stop' and records[-1]['data']['mode']=='STOPPED'

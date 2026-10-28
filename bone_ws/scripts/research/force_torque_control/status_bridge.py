@@ -40,10 +40,21 @@ class StatusAssembler:
             if row is None:
                 values.append(0.); stamps.append(0); valid.append(False); faults.append(0); continue
             t,status=row
-            ok=self.confirmed and 0<=now_ns-t<=self.max_age*1e9 and status.error_code==0
+            ok=self.confirmed and 0<=now_ns-t<=self.max_age*1e9 and status.error_code==0 and 0<=status.force_adc<=4095
             values.append(gf_to_newtons(status.force_g) if self.confirmed else 0.)
             stamps.append(t); valid.append(ok); faults.append(status.error_code)
         return values, stamps, valid, faults
+
+    def snapshot_raw(self,now_ns):
+        values=[]; adc=[]; stamps=[]; valid=[]; faults=[]
+        for row in self.rows:
+            if row is None:
+                values.append(0); adc.append(0); stamps.append(0); valid.append(False); faults.append(0); continue
+            t,status=row
+            values.append(status.force_g); adc.append(status.force_adc); stamps.append(t)
+            faults.append(status.error_code)
+            valid.append(0<=now_ns-t<=self.max_age*1e9 and status.error_code==0 and 0<=status.force_adc<=4095)
+        return values,adc,stamps,valid,faults
 
 
 class ReadOnlyStatusSource:
@@ -90,21 +101,27 @@ class LafForceAdapter:
         self.fault=str(exc); self.entered=False
         errors=self._pause_once()
         if errors: self.fault += '; pause unconfirmed: '+', '.join(errors)
-    def set_force_mode_explicit(self):
+    def _encode(self,command):
+        from core import AxialForceN
+        if type(command) is not AxialForceN: raise TypeError('axial force N required')
+        if any(v<0 or v>lim for v,lim in zip(command.values,self.limits)):
+            raise ValueError('force outside configured axis limits')
+        return [round(newtons_to_gf(v)) for v in command.values]
+    def set_force_mode_explicit(self,initial_force):
+        # Manual section 3.5.6 permits one block for 0x25..0x27. Supplying
+        # the intended reference avoids a separate transition with a stale 0x27.
+        # A matching reference does NOT establish safe physical behavior.
         if self.fault or self.entered: raise RuntimeError('mode cannot be entered')
+        raw=self._encode(initial_force)
         try:
-            for m in self.motors:
-                if m.write_register(0x25,[3]).error_code: raise RuntimeError('mode status fault')
+            for m,value in zip(self.motors,raw):
+                if m.write_register(0x25,[3,0,value]).error_code: raise RuntimeError('mode status fault')
             self.entered=True
         except Exception as exc:
             self._trip(exc); raise
     def write_force(self,command):
-        from core import AxialForceN
-        if type(command) is not AxialForceN: raise TypeError('axial force N required')
+        raw=self._encode(command)
         if not self.entered or self.fault: raise RuntimeError('force mode not entered')
-        if any(v<0 or v>lim for v,lim in zip(command.values,self.limits)):
-            raise ValueError('force outside configured axis limits')
-        raw=[round(newtons_to_gf(v)) for v in command.values]
         try:
             for m,value in zip(self.motors,raw):
                 if m.write_register(0x27,[value]).error_code: raise RuntimeError('force status fault')

@@ -6,7 +6,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float64MultiArray, String
 from pus6_msgs.msg import TimedJointFeedback
-from pus6_research_msgs.msg import TorqueCommand, AxialForceCommand, ForceFeedback
+from pus6_research_msgs.msg import TorqueCommand, AxialForceCommand, ForceFeedback, RawForceFeedback
 from core import (Mode, MeasuredForce, MockForceBus, MockTorqueBackend,
                   ForceProtocolMock, ForceOuterLoop, ResearchSession, TorqueNm)
 from controller import Config, JointTorquePID
@@ -22,6 +22,7 @@ class OfflineControlNode(Node):
         self.declare_parameter('startup_timeout_s', 0.2)
         self.session = None
         self.target = self.position = self.force = None
+        self.raw_force=None
         self.force_source = 0
         self.force_ready = False
         self.target_ns = 0
@@ -33,6 +34,7 @@ class OfflineControlNode(Node):
         self.create_subscription(Float64MultiArray, '~/desired_lengths_m', self.on_target, 10)
         self.create_subscription(TimedJointFeedback, '~/position_feedback', self.on_position, 10)
         self.create_subscription(ForceFeedback, '~/force_feedback', self.on_force, 10)
+        self.create_subscription(RawForceFeedback, '~/raw_force_feedback', self.on_raw_force, 10)
         if self.get_parameter('enabled').value:
             c=json.loads(self.get_parameter('config_json').value)
             pid=JointTorquePID(Config(**c['pid']))
@@ -47,6 +49,7 @@ class OfflineControlNode(Node):
     def on_force(self,msg):
         self.force_source=int(msg.source)
         self.force=MeasuredForce(tuple(float(v) for v in msg.force_n),tuple(int(v) for v in msg.rx_monotonic_ns),tuple(bool(v) for v in msg.valid),tuple(int(v) for v in msg.fault_codes))
+    def on_raw_force(self,msg): self.raw_force=msg
     def tick(self):
         s=self.session
         if not s or s.mode is Mode.FAULT: return
@@ -83,7 +86,12 @@ class OfflineControlNode(Node):
                   'drive_state':'mock_active', 'state':state,'hardware_write_count':0,
                   'force_valid':list(self.force.valid) if self.force else None,
                   'force_fault_codes':list(self.force.faults) if self.force else None,
-                  'force_source':self.force_source, 'force_rx_ns':list(self.force.rx_ns) if self.force else None}
+                  'force_source':self.force_source, 'force_rx_ns':list(self.force.rx_ns) if self.force else None,
+                  'raw_force':({'source':int(self.raw_force.source),'g_raw':[int(v) for v in self.raw_force.force_g_raw],
+                     'adc':[int(v) for v in self.raw_force.force_adc],
+                     'valid':[bool(v) and 0<=now-int(t)<=age*1e9 for v,t in zip(self.raw_force.valid,self.raw_force.rx_monotonic_ns)],
+                     'rx_ns':[int(v) for v in self.raw_force.rx_monotonic_ns],
+                     'fault_codes':[int(v) for v in self.raw_force.fault_codes]} if self.raw_force else None)}
             self.pub_diag.publish(String(data=json.dumps(diag)))
             if cmd is not None:
                 if isinstance(cmd,TorqueNm):
