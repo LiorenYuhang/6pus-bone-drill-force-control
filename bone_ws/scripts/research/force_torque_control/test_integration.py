@@ -144,3 +144,24 @@ def test_laf_partial_write_fault_latches_and_never_retries():
     attempts=bus.attempt_count
     with pytest.raises(RuntimeError): adapter.write_force(AxialForceN((1.,)*6))
     assert bus.attempt_count==attempts and bus.hardware_write_count==0
+
+def test_status_position_requires_all_axes_to_advance():
+    rclpy.init()
+    node=ForceStatusNode([Parameter('source',value='mock'),Parameter('publish_position',value=True),Parameter('max_age_s',value=2.)])
+    captured=[]
+    class Capture:
+        def publish(self,msg): captured.append(msg)
+    node.position_pub=Capture()
+    bus=MockForceBus(); source=ReadOnlyStatusSource(bus)
+    def sample(axis):
+        _,raw,ts=source.poll(axis); msg=RawMotorStatus(); msg.axis_id=axis; msg.source=1
+        msg.rx_monotonic_ns=ts; msg.frame=list(raw); node.on_status(msg)
+    try:
+        for axis in range(1,7): sample(axis)
+        node.publish_feedback(); assert len(captured)==1
+        sample(1); node.publish_feedback(); assert len(captured)==1
+        for axis in range(2,7): sample(axis)
+        node.publish_feedback(); assert len(captured)==2
+        assert all(b>a for a,b in zip(captured[0].per_axis_rx_done_monotonic_ns,captured[1].per_axis_rx_done_monotonic_ns))
+    finally:
+        node.destroy_node(); rclpy.shutdown()

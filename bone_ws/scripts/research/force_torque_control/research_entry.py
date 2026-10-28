@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unified synthetic/replay research entry. No physical transport factory."""
+"""Unified mock-output research entry; explicit optional read-only sensors."""
 import argparse
 import json
 import math
@@ -17,6 +17,7 @@ from status_node import ForceStatusNode
 from mock_inputs import MockInputs
 from run_log import RunLog
 from core import Mode
+from live_readonly import LiveReadonly
 
 HERE=Path(__file__).resolve().parent
 REPO=HERE.parents[3]
@@ -25,8 +26,8 @@ def make_parser():
     p=argparse.ArgumentParser(description='Mock-only 6PUS research runtime')
     p.add_argument('--config',required=True)
     p.add_argument('--mode',choices=['PID_TORQUE','ACTUATOR_FORCE_CONTROL','DS_SCTDE'])
-    p.add_argument('--input',choices=['synthetic','external'])
-    p.add_argument('--status-source',choices=['mock','hardware'],help='provenance required for external raw status; never opens a port')
+    p.add_argument('--input',choices=['synthetic','external','hardware-readonly'])
+    p.add_argument('--status-source',choices=['mock','hardware'],help='required provenance for raw status; hardware-readonly explicitly opens read-only sources')
     p.add_argument('--duration',type=float,default=0.,help='seconds; 0 runs until Ctrl+C')
     p.add_argument('--log-dir',help='new directory; default results/research_control/session-...')
     return p
@@ -38,7 +39,9 @@ def main(argv=None):
     mode=args.mode or c['mode']; source=args.input or c.get('input_mode','external')
     status_source=args.status_source or c.get('status_source','mock')
     if mode not in ('PID_TORQUE','ACTUATOR_FORCE_CONTROL','DS_SCTDE'): raise ValueError('mode unavailable')
-    if source not in ('synthetic','external'): raise ValueError('invalid input_mode')
+    if source not in ('synthetic','external','hardware-readonly'): raise ValueError('invalid input_mode')
+    if source=='hardware-readonly' and (mode!='PID_TORQUE' or status_source!='hardware'):
+        raise ValueError('hardware-readonly requires PID_TORQUE and hardware status source; output remains mock')
     if status_source not in ('mock','hardware') or (source=='synthetic' and status_source!='mock'): raise ValueError('invalid status provenance')
     confirmed=c.get('mock_gf_assumption') is True if status_source=='mock' else c.get('force_unit_confirmed') is True
     if not math.isfinite(args.duration) or args.duration<0: raise ValueError('invalid duration')
@@ -51,14 +54,17 @@ def main(argv=None):
     if mode=='DS_SCTDE':
         print('DS_SCTDE uses the existing standalone offline closed-loop simulation, not the ROS actuator chain.',flush=True)
         return subprocess.call([sys.executable,str(HERE.parent/'ds_sctde_closed_loop'/'simulate.py'),'--output',str(run_dir/'ds_sctde')])
-    rclpy.init(); nodes=[]; executor=None; logger=None; control=None; reason='normal'; code=0
+    rclpy.init(); nodes=[]; executor=None; logger=None; control=None; live=None; reason='normal'; code=0
     try:
         control=OfflineControlNode([Parameter('enabled',value=True),Parameter('mode',value=mode),
             Parameter('config_json',value=json.dumps(c['control'])),
-            Parameter('target_max_age_s',value=float(c.get('target_max_age_s',.2)))])
+            Parameter('target_max_age_s',value=float(c.get('target_max_age_s',.2))),
+            Parameter('startup_timeout_s',value=5. if source=='hardware-readonly' else float(c.get('target_max_age_s',.2)))])
         nodes.append(control)
         imu=ImuResearchNode([Parameter('enabled',value=True),Parameter('config_json',value=json.dumps(c['imu'])),
-            Parameter('imu_max_age_s',value=float(c.get('imu_max_age_s',.2)))])
+            Parameter('imu_max_age_s',value=float(c.get('imu_max_age_s',.2))),
+            Parameter('startup_timeout_s',value=5. if source=='hardware-readonly' else float(c.get('imu_max_age_s',.2))),
+            Parameter('reference_mode',value='first_valid' if source=='hardware-readonly' else 'configured')])
         nodes.append(imu)
         status=ForceStatusNode([Parameter('source',value=status_source),
             Parameter('gram_force_confirmed',value=confirmed),
@@ -68,6 +74,8 @@ def main(argv=None):
         logger=RunLog(run_dir/'telemetry.jsonl'); nodes.append(logger)
         if source=='synthetic':
             mock=MockInputs(control.session.force.bus); nodes.append(mock)
+        if source=='hardware-readonly':
+            live=LiveReadonly(status,run_dir); live.start()
         executor=SingleThreadedExecutor()
         for node in nodes: executor.add_node(node)
         logger.record('start',{'mode':mode,'input_mode':source,'status_source':status_source,'backend':'mock','hardware_write_count':0})
@@ -75,11 +83,13 @@ def main(argv=None):
         start=time.monotonic()
         while rclpy.ok():
             executor.spin_once(timeout_sec=.05)
+            if live and (live.error or any(p.poll() is not None for p in live.children)):
+                reason='read-only sensor source: '+str(live.error or 'IMU process exited'); code=2; break
             if imu.fault or control.session.mode is Mode.FAULT:
                 reason='imu: '+imu.fault if imu.fault else 'control: '+str(control.session.reason)
                 code=2; break
             if args.duration and time.monotonic()-start>=args.duration: break
-        if code==0 and source=='synthetic' and args.duration and not (logger.counts['force'] if mode=='ACTUATOR_FORCE_CONTROL' else logger.counts['torque']):
+        if code==0 and source in ('synthetic','hardware-readonly') and args.duration and not (logger.counts['force'] if mode=='ACTUATOR_FORCE_CONTROL' else logger.counts['torque']):
             reason='no mock control command observed'; code=2
     except KeyboardInterrupt:
         reason='interrupted'
@@ -89,6 +99,12 @@ def main(argv=None):
         if control is not None and control.session is not None:
             try: control.session.stop()
             except Exception as exc: reason='mock stop failed: '+str(exc); code=2
+        if live is not None:
+            try:
+                audit=live.close()
+                if logger is not None: logger.record('readonly_audit',audit)
+                if audit['register_writes']!=0: reason='unexpected register write'; code=2
+            except Exception as exc: reason='read-only cleanup: '+str(exc); code=2
         if logger is not None:
             logger.record('stop',{'reason':reason,'mode':control.session.mode.value if control and control.session else 'unavailable',
                                  'counts':logger.counts,'hardware_write_count':0})

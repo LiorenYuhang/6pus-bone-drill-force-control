@@ -19,6 +19,7 @@ class OfflineControlNode(Node):
         self.declare_parameter('config_json', '{}')
         self.declare_parameter('period_s', 0.02)
         self.declare_parameter('target_max_age_s', 0.2)
+        self.declare_parameter('startup_timeout_s', 0.2)
         self.session = None
         self.target = self.position = self.force = None
         self.force_source = 0
@@ -52,7 +53,7 @@ class OfflineControlNode(Node):
         now=time.monotonic_ns()
         try:
             if self.target is None or self.position is None:
-                if (now-self.started_ns)*1e-9 > float(self.get_parameter('target_max_age_s').value):
+                if (now-self.started_ns)*1e-9 > float(self.get_parameter('startup_timeout_s').value):
                     raise ValueError('desired lengths or position feedback missing')
                 return
             if (now-self.target_ns)*1e-9 > float(self.get_parameter('target_max_age_s').value):
@@ -65,7 +66,7 @@ class OfflineControlNode(Node):
             if s.mode is Mode.ACTUATOR_FORCE_CONTROL:
                 if self.force is not None and any(self.force.faults): raise ValueError('force feedback fault')
                 if self.force is None or self.force_source not in (1,2) or not all(self.force.valid):
-                    if not self.force_ready and (now-self.started_ns)*1e-9 <= float(self.get_parameter('target_max_age_s').value): return
+                    if not self.force_ready and (now-self.started_ns)*1e-9 <= float(self.get_parameter('startup_timeout_s').value): return
                     raise ValueError('force feedback missing, invalid or fault')
                 if any(t <= 0 or t > now or (now-t)*1e-9 > age for t in self.force.rx_ns):
                     raise ValueError('force feedback stale')

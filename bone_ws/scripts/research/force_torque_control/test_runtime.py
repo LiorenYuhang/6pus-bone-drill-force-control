@@ -24,7 +24,7 @@ def test_unified_synthetic_runtime(mode,kind,tmp_path):
     assert result.returncode==0, result.stdout+'\n'+result.stderr
     records=events(tmp_path)
     assert any(r['kind']==kind for r in records)
-    assert any(r['kind']=='imu' and len(r['data']['ik_lengths_m'])==6 for r in records)
+    assert any(r['kind']=='imu' and isinstance(r['data'],dict) and len(r['data'].get('ik_lengths_m',[]))==6 for r in records)
     controls=[r['data'] for r in records if r['kind']=='control' and isinstance(r['data'],dict)]
     assert controls and all(d['actual_m']==pytest.approx([.05]*6) for d in controls)
     assert all(all(t>0 for t in d['position_rx_ns']) for d in controls)
@@ -79,3 +79,9 @@ def test_interrupt_cleans_up_mock(tmp_path):
         assert records[-1]['kind']=='stop' and records[-1]['data']['mode']=='STOPPED'
     finally:
         if proc.poll() is None: proc.kill(); proc.wait()
+
+def test_live_readonly_refuses_force_actuation_path(tmp_path):
+    result=run(tmp_path,'--input','hardware-readonly','--status-source','hardware',
+               '--mode','ACTUATOR_FORCE_CONTROL','--duration','1')
+    assert result.returncode != 0 and 'hardware-readonly requires PID_TORQUE' in result.stderr
+    assert not (tmp_path/'run').exists()

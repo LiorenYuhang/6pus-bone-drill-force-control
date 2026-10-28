@@ -38,6 +38,7 @@ class ForceStatusNode(Node):
         self.diag=self.create_publisher(String,'~/diagnostics',10)
         self.position_pub=self.create_publisher(TimedJointFeedback,'/research_force_torque_mock/position_feedback',10) if self.get_parameter('publish_position').value else None
         self.geometry=load_geometry_config() if self.position_pub else None
+        self.last_position_ns=None
         self.create_subscription(RawMotorStatus,'~/raw_status',self.on_status,10)
         self.create_timer(.02,self.publish_feedback)
     def on_status(self,msg):
@@ -54,6 +55,9 @@ class ForceStatusNode(Node):
             rows=self.assembler.rows; now=time.monotonic_ns()
             if all(row is not None and 0<=now-row[0]<=self.assembler.max_age*1e9 for row in rows):
                 times=[row[0] for row in rows]; status=[row[1] for row in rows]
+                if self.last_position_ns is not None and not all(t>old for t,old in zip(times,self.last_position_ns)):
+                    return
+                self.last_position_ns=times
                 pos=TimedJointFeedback(); pos.header.stamp=self.get_clock().now().to_msg()
                 pos.snapshot_start_monotonic_ns=min(times); pos.snapshot_end_monotonic_ns=max(times)
                 pos.per_axis_rx_done_monotonic_ns=times
