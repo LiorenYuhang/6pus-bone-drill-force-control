@@ -22,6 +22,7 @@ class OfflineControlNode(Node):
         self.session = None
         self.target = self.position = self.force = None
         self.force_source = 0
+        self.force_ready = False
         self.target_ns = 0
         self.last_position_ns = None
         self.started_ns = time.monotonic_ns()
@@ -62,11 +63,13 @@ class OfflineControlNode(Node):
                 raise ValueError('position feedback stale')
             if any(p.fault_codes): raise ValueError('position feedback fault')
             if s.mode is Mode.ACTUATOR_FORCE_CONTROL:
-                if self.force is None: raise ValueError('force feedback missing')
-                if self.force_source not in (1,2): raise ValueError('force feedback source unknown')
-                if not all(self.force.valid) or any(self.force.faults): raise ValueError('force feedback invalid or fault')
+                if self.force is not None and any(self.force.faults): raise ValueError('force feedback fault')
+                if self.force is None or self.force_source not in (1,2) or not all(self.force.valid):
+                    if not self.force_ready and (now-self.started_ns)*1e-9 <= float(self.get_parameter('target_max_age_s').value): return
+                    raise ValueError('force feedback missing, invalid or fault')
                 if any(t <= 0 or t > now or (now-t)*1e-9 > age for t in self.force.rx_ns):
                     raise ValueError('force feedback stale')
+                self.force_ready=True
             if stamps == self.last_position_ns: return
             cmd=s.cycle(self.target,list(p.positions_meters),stamps,list(p.fault_codes),now,self.force)
             self.last_position_ns=stamps

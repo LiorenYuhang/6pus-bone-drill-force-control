@@ -135,5 +135,6 @@
     "max_dt_s": 0.1
   },
   "target_max_age_s": 0.5,
-  "imu_max_age_s": 0.5
+  "imu_max_age_s": 0.5,
+  "input_mode": "synthetic"
 }

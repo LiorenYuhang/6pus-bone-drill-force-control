@@ -25,6 +25,7 @@ class Mode(Enum):
     ACTUATOR_FORCE_CONTROL='ACTUATOR_FORCE_CONTROL'
     DS_SCTDE='DS_SCTDE'
     FAULT='FAULT'
+    STOPPED='STOPPED'
 
 
 @dataclass(frozen=True)
@@ -160,6 +161,16 @@ class ResearchSession:
             if previous is Mode.ACTUATOR_FORCE_CONTROL: self.force.stop()
             elif previous is Mode.PID_TORQUE: self.torque.stop()
         except Exception as exc: self.stop_error=str(exc)
+    def stop(self):
+        if self.mode in (Mode.STOPPED, Mode.FAULT, Mode.IDLE): return
+        previous=self.mode
+        try:
+            if previous is Mode.ACTUATOR_FORCE_CONTROL: self.force.stop()
+            elif previous is Mode.PID_TORQUE: self.torque.stop()
+            self.mode=Mode.STOPPED
+        except Exception as exc:
+            self.mode=Mode.FAULT; self.reason='mock stop failed'; self.stop_error=str(exc)
+            raise
     def cycle(self,desired,actual,timestamps,faults,now_ns,force_feedback=None):
         try:
             if self.mode is Mode.PID_TORQUE:
