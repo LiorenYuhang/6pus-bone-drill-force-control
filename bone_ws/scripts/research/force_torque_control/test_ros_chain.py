@@ -31,7 +31,7 @@ def test_dds_modes(mode,output_type,topic,field):
         assert target.get_subscription_count() and position.get_subscription_count()
         target.publish(Float64MultiArray(data=[.051]*6))
         t=time.monotonic_ns()
-        f=ForceFeedback(); f.valid=[True]*6; f.force_n=[1.]*6; f.rx_monotonic_ns=[t]*6; force.publish(f)
+        f=ForceFeedback(); f.source=ForceFeedback.SOURCE_MOCK; f.valid=[True]*6; f.force_n=[1.]*6; f.rx_monotonic_ns=[t]*6; force.publish(f)
         p=TimedJointFeedback(); p.positions_meters=[.05]*6; p.per_axis_rx_done_monotonic_ns=[t-50_000_000]*6; position.publish(p)
         while (node.session.pid.previous_t is None if mode=='PID_TORQUE' else node.session.force_loop.previous_t is None) and time.monotonic()<deadline:
             rclpy.spin_once(node,timeout_sec=.01)

@@ -21,6 +21,7 @@ class OfflineControlNode(Node):
         self.declare_parameter('target_max_age_s', 0.2)
         self.session = None
         self.target = self.position = self.force = None
+        self.force_source = 0
         self.target_ns = 0
         self.last_position_ns = None
         self.started_ns = time.monotonic_ns()
@@ -42,6 +43,7 @@ class OfflineControlNode(Node):
         self.target=list(msg.data); self.target_ns=time.monotonic_ns()
     def on_position(self,msg): self.position=msg
     def on_force(self,msg):
+        self.force_source=int(msg.source)
         self.force=MeasuredForce(tuple(float(v) for v in msg.force_n),tuple(int(v) for v in msg.rx_monotonic_ns),tuple(bool(v) for v in msg.valid),tuple(int(v) for v in msg.fault_codes))
     def tick(self):
         s=self.session
@@ -61,6 +63,7 @@ class OfflineControlNode(Node):
             if any(p.fault_codes): raise ValueError('position feedback fault')
             if s.mode is Mode.ACTUATOR_FORCE_CONTROL:
                 if self.force is None: raise ValueError('force feedback missing')
+                if self.force_source not in (1,2): raise ValueError('force feedback source unknown')
                 if not all(self.force.valid) or any(self.force.faults): raise ValueError('force feedback invalid or fault')
                 if any(t <= 0 or t > now or (now-t)*1e-9 > age for t in self.force.rx_ns):
                     raise ValueError('force feedback stale')
@@ -72,8 +75,11 @@ class OfflineControlNode(Node):
                 state=dict(state)
                 state['saturated']=[abs(state['p_nm'][i]+state['i_nm'][i]+state['d_nm'][i]-state['tau_nm'][i]) > 1e-12 for i in range(6)]
             diag={'mode':s.mode.value,'desired_m':self.target,'actual_m':[float(v) for v in p.positions_meters],
-                  'position_rx_ns':list(stamps),'state':state,'hardware_write_count':0,
-                  'force_rx_ns':list(self.force.rx_ns) if self.force else None}
+                  'position_rx_ns':list(stamps),'position_fault_codes':[int(v) for v in p.fault_codes],
+                  'drive_state':'mock_active', 'state':state,'hardware_write_count':0,
+                  'force_valid':list(self.force.valid) if self.force else None,
+                  'force_fault_codes':list(self.force.faults) if self.force else None,
+                  'force_source':self.force_source, 'force_rx_ns':list(self.force.rx_ns) if self.force else None}
             self.pub_diag.publish(String(data=json.dumps(diag)))
             if cmd is not None:
                 if isinstance(cmd,TorqueNm):
