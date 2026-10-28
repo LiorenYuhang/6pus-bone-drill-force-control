@@ -32,6 +32,7 @@ class Config:
     max_dt: float
     max_age: float
     max_condition: float
+    allow_unverified_proxy: bool = False  # simulation-only opt-in
 
     def __post_init__(self):
         m = arr(self.mass, (3, 3), 'mass')
@@ -49,6 +50,8 @@ class Config:
             object.__setattr__(self, key, a.copy())
         if not all(np.isfinite(x) for x in (self.min_dt, self.max_dt, self.max_age, self.max_condition)) or not (0 < self.min_dt <= self.max_dt and self.max_age > 0 and self.max_condition > 1):
             raise ValueError('invalid timing or condition limits')
+        if not isinstance(self.allow_unverified_proxy, bool):
+            raise ValueError('allow_unverified_proxy must be boolean')
 
 
 class ControllerFault(RuntimeError):
@@ -109,6 +112,11 @@ class DSSCTDE:
         if not cfg.min_dt <= dt <= cfg.max_dt: raise ValueError('invalid sample interval')
         if s['applied_wrench_timestamp_ns'] != self.previous_ns:
             raise ValueError('applied wrench must correspond to previous sample')
+        source = s['applied_wrench_source']
+        if source not in ('simulation_oracle', 'measured', 'model_estimate', 'command_proxy_unverified'):
+            raise ValueError('explicit applied wrench provenance required')
+        if source == 'command_proxy_unverified' and not cfg.allow_unverified_proxy:
+            raise ValueError('unverified command proxy disabled')
         applied = arr(s['applied_task_wrench_prev_nm'], (3,), 'applied_task_wrench_prev_nm')
         h = applied - cfg.mass @ self.previous_acceleration
         task = cfg.mass @ (eta_ddot_d + cfg.kp*(eta_d-eta) + cfg.kd*(eta_dot_d-eta_dot)) + h
@@ -143,5 +151,5 @@ class DSSCTDE:
             'ec_m': ec.tolist(), 'sigma_m_s': sigma.tolist(), 'reference_acceleration_m_s2': qddot_r.tolist(),
             'tde_wrench_nm': h.tolist(), 'task_wrench_nm': task.tolist(), 'actuator_force_n': force.tolist(),
             'sync_motor_nm': sync.tolist(), 'tau_raw_nm': raw.tolist(), 'tau_nm': out.tolist(),
-            'saturated': bool(np.any(out != raw)), 'dt_s': dt, 'algorithm': 'DS_SCTDE'}
+            'applied_wrench_source': source, 'saturated': bool(np.any(out != raw)), 'dt_s': dt, 'algorithm': 'DS_SCTDE'}
         return tuple(out)

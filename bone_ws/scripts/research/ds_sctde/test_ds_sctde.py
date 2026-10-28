@@ -19,7 +19,8 @@ def sample(t=1_000_000_000):
         eta_ddot_d_rad_s2=[0.]*3, q_m=[0.]*6, q_d_m=[0.]*6,
         q_dot_m_s=[0.]*6, q_dot_d_m_s=[0.]*6, q_ddot_d_m_s2=[0.]*6,
         friction_motor_nm=[0.]*6, jacobian_m_per_rad=np.vstack([np.eye(3),np.eye(3)]).tolist(),
-        applied_wrench_timestamp_ns=t-100_000_000, applied_task_wrench_prev_nm=[4.,5.,6.])
+        applied_wrench_timestamp_ns=t-100_000_000, applied_task_wrench_prev_nm=[4.,5.,6.],
+        applied_wrench_source='simulation_oracle')
 
 
 def test_tde_mapping_matches_explicit_equations():
@@ -36,6 +37,22 @@ def test_signed_transmission_controls_motor_direction():
     s=sample(); c.update(s,s['timestamp_ns'])
     s=sample(1_100_000_000); result=c.update(s,s['timestamp_ns'])
     assert result == pytest.approx([.015,-.015,.015,-.015,.015,-.015])
+
+
+def test_provenance_does_not_change_formula_for_same_numeric_wrench():
+    outputs=[]
+    for source in ('simulation_oracle','command_proxy_unverified'):
+        c=DSSCTDE(config(allow_unverified_proxy=True)); first=sample(); c.update(first,first['timestamp_ns'])
+        second=sample(1_100_000_000); second['applied_wrench_source']=source
+        outputs.append(c.update(second,second['timestamp_ns']))
+        assert c.state['applied_wrench_source']==source
+    assert outputs[0] == pytest.approx(outputs[1])
+
+
+def test_unverified_command_proxy_is_disabled_by_default():
+    c=DSSCTDE(config()); first=sample(); c.update(first,first['timestamp_ns'])
+    second=sample(1_100_000_000); second['applied_wrench_source']='command_proxy_unverified'
+    with pytest.raises(ControllerFault, match='proxy disabled'): c.update(second,second['timestamp_ns'])
 
 
 def test_cross_coupling_reference_and_six_axis_order():
@@ -65,7 +82,19 @@ def test_sample_rate_and_saturation_integral_freeze():
     assert np.all(c.integral_c == 0) and c.state['saturated']
 
 
-@pytest.mark.parametrize('kind',['stale','nan','fault','dt','wrench_time','rank','inf'])
+def test_persistent_sync_bias_accumulates_until_integral_bound():
+    c=DSSCTDE(config(integral_limit=[.0001]*6)); s=sample(); c.update(s,s['timestamp_ns'])
+    for i in range(1,101):
+        t=1_000_000_000+i*10_000_000
+        s=sample(t); s['applied_wrench_timestamp_ns']=t-10_000_000
+        s['q_d_m']=[.0001,0,0,0,0,0]
+        c.update(s,t)
+    assert c.integral_c[0] == pytest.approx(.0001)
+    assert c.integral_c[1] == pytest.approx(-.0001)
+    c.reset(); assert np.all(c.integral_c == 0)
+
+
+@pytest.mark.parametrize('kind',['stale','nan','fault','dt','wrench_time','rank','inf','source'])
 def test_bad_inputs_latch(kind):
     c=DSSCTDE(config()); a=sample(); c.update(a,a['timestamp_ns']); s=sample(1_100_000_000)
     if kind=='nan': s['q_m'][2]=float('nan')
@@ -74,6 +103,7 @@ def test_bad_inputs_latch(kind):
     if kind=='dt': s['timestamp_ns']=1_000_000_000
     if kind=='wrench_time': s['applied_wrench_timestamp_ns']=1
     if kind=='rank': s['jacobian_m_per_rad']=[[0.]*3]*6
+    if kind=='source': s['applied_wrench_source']='command'
     now=s['timestamp_ns'] + (300_000_000 if kind=='stale' else 0)
     with pytest.raises(ControllerFault): c.update(s,now)
     assert np.all(c.output == 0)

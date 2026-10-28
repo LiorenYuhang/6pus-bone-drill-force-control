@@ -27,7 +27,7 @@ def run():
             eta_dot_rad_s=vel.tolist(),eta_dot_d_rad_s=vd.tolist(),eta_ddot_rad_s2=a.tolist(),eta_ddot_d_rad_s2=ad.tolist(),
             q_m=q.tolist(),q_d_m=qd.tolist(),q_dot_m_s=(j@vel).tolist(),q_dot_d_m_s=(j@vd).tolist(),
             q_ddot_d_m_s2=(j@ad).tolist(),friction_motor_nm=[0.]*6,jacobian_m_per_rad=j.tolist(),
-            applied_task_wrench_prev_nm=[0.]*3,applied_wrench_timestamp_ns=t-int(dt*1e9))
+            applied_task_wrench_prev_nm=[0.]*3,applied_wrench_timestamp_ns=t-int(dt*1e9),applied_wrench_source='simulation_oracle')
         ds=c.update(s,t); pid=p.update(qd,q,[t]*6,t,[0]*6)
         if ds is not None: rows.append((ds,pid))
     x=np.array(rows)
