@@ -16,6 +16,7 @@ class ImuResearchNode(Node):
         self.declare_parameter('enabled',False); self.declare_parameter('config_json','{}')
         self.declare_parameter('period_s',.02); self.declare_parameter('imu_max_age_s',.2)
         self.declare_parameter('startup_timeout_s',.2); self.declare_parameter('reference_mode','configured')
+        self.declare_parameter('publish_unshaped_ik',False)
         self.reference_captured=False
         self.base=self.platform=None; self.start_ns=time.monotonic_ns(); self.fault=None
         self.pub=self.create_publisher(Float64MultiArray,'/research_force_torque_mock/desired_lengths_m',10)
@@ -56,7 +57,8 @@ class ImuResearchNode(Node):
             result=self.chain.step(self.base[0],self.platform[0],now)
             if result is None: return
             result.update(base_rx_ns=self.base[1],platform_rx_ns=self.platform[1],base_header_ns=self.base[2],platform_header_ns=self.platform[2],frame='pus6_base',hardware_write_count=0)
-            self.pub.publish(Float64MultiArray(data=result['desired_lengths_m']))
+            target=result['ik_lengths_m'] if self.get_parameter('publish_unshaped_ik').value else result['desired_lengths_m']
+            self.pub.publish(Float64MultiArray(data=target))
             self.diag.publish(String(data=json.dumps(result)))
         except Exception as exc:
             self.fault=str(exc); self.diag.publish(String(data='FAULT: '+self.fault))
