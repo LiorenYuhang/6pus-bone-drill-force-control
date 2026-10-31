@@ -22,6 +22,7 @@ PAUSE_REGISTER = 0x1A
 class Mode(Enum):
     IDLE='IDLE'
     PID_TORQUE='PID_TORQUE'
+    FF_PID_TORQUE='FF_PID_TORQUE'
     ACTUATOR_FORCE_CONTROL='ACTUATOR_FORCE_CONTROL'
     DS_SCTDE='DS_SCTDE'
     FAULT='FAULT'
@@ -149,7 +150,7 @@ class ResearchSession:
         self.torque=torque_backend; self.force=force_backend; self.reason=None; self.stop_error=None
     def select(self,mode):
         if self.mode is not Mode.IDLE: raise RuntimeError('mode already selected')
-        if mode not in (Mode.PID_TORQUE,Mode.ACTUATOR_FORCE_CONTROL): raise RuntimeError('mode unavailable')
+        if mode not in (Mode.PID_TORQUE,Mode.FF_PID_TORQUE,Mode.ACTUATOR_FORCE_CONTROL): raise RuntimeError('mode unavailable')
         self.mode=mode
         if mode is Mode.ACTUATOR_FORCE_CONTROL:
             try: self.force.enter()
@@ -159,22 +160,28 @@ class ResearchSession:
         previous=self.mode; self.mode=Mode.FAULT; self.reason=str(reason)
         try:
             if previous is Mode.ACTUATOR_FORCE_CONTROL: self.force.stop()
-            elif previous is Mode.PID_TORQUE: self.torque.stop()
+            elif previous in (Mode.PID_TORQUE,Mode.FF_PID_TORQUE): self.torque.stop()
         except Exception as exc: self.stop_error=str(exc)
     def stop(self):
         if self.mode in (Mode.STOPPED, Mode.FAULT, Mode.IDLE): return
         previous=self.mode
         try:
             if previous is Mode.ACTUATOR_FORCE_CONTROL: self.force.stop()
-            elif previous is Mode.PID_TORQUE: self.torque.stop()
+            elif previous in (Mode.PID_TORQUE,Mode.FF_PID_TORQUE): self.torque.stop()
             self.mode=Mode.STOPPED
         except Exception as exc:
             self.mode=Mode.FAULT; self.reason='mock stop failed'; self.stop_error=str(exc)
             raise
-    def cycle(self,desired,actual,timestamps,faults,now_ns,force_feedback=None):
+    def cycle(self,desired,actual,timestamps,faults,now_ns,force_feedback=None,feedforward=None):
         try:
             if self.mode is Mode.PID_TORQUE:
                 out=self.pid.update(desired,actual,timestamps,now_ns,faults)
+                if self.pid.state['primed']: return None
+                cmd=TorqueNm(tuple(out)); self.torque.write(cmd); return cmd
+            if self.mode is Mode.FF_PID_TORQUE:
+                if feedforward is None: raise ValueError('torque feedforward required')
+                values, stamps = feedforward
+                out=self.pid.update(desired,actual,timestamps,now_ns,faults,values,stamps)
                 if self.pid.state['primed']: return None
                 cmd=TorqueNm(tuple(out)); self.torque.write(cmd); return cmd
             if self.mode is Mode.ACTUATOR_FORCE_CONTROL:

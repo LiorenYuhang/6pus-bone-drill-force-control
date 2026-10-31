@@ -2,6 +2,8 @@
 """Mock-only ROS bridge. No serial transport is imported or opened here."""
 import json
 import time
+from pathlib import Path
+import sys
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float64MultiArray, String
@@ -10,6 +12,8 @@ from pus6_research_msgs.msg import TorqueCommand, AxialForceCommand, ForceFeedba
 from core import (Mode, MeasuredForce, MockForceBus, MockTorqueBackend,
                   ForceProtocolMock, ForceOuterLoop, ResearchSession, TorqueNm)
 from controller import Config, JointTorquePID
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from joint_torque_ff_pid.controller import Config as FFConfig, JointTorqueFeedforwardPID
 
 class OfflineControlNode(Node):
     def __init__(self, parameter_overrides=None):
@@ -23,6 +27,7 @@ class OfflineControlNode(Node):
         self.session = None
         self.target = self.position = self.force = None
         self.raw_force=None
+        self.feedforward=None
         self.force_source = 0
         self.force_ready = False
         self.target_ns = 0
@@ -35,9 +40,11 @@ class OfflineControlNode(Node):
         self.create_subscription(TimedJointFeedback, '~/position_feedback', self.on_position, 10)
         self.create_subscription(ForceFeedback, '~/force_feedback', self.on_force, 10)
         self.create_subscription(RawForceFeedback, '~/raw_force_feedback', self.on_raw_force, 10)
+        self.create_subscription(TorqueCommand, '~/feedforward_torque', self.on_feedforward, 10)
         if self.get_parameter('enabled').value:
             c=json.loads(self.get_parameter('config_json').value)
-            pid=JointTorquePID(Config(**c['pid']))
+            ff_mode = self.get_parameter('mode').value == Mode.FF_PID_TORQUE.value
+            pid=JointTorqueFeedforwardPID(FFConfig(**c['pid'])) if ff_mode else JointTorquePID(Config(**c['pid']))
             f=ForceOuterLoop(**c['force'])
             bus=MockForceBus()
             self.session=ResearchSession(pid,f,MockTorqueBackend(),ForceProtocolMock(bus,max(f.limit)))
@@ -50,6 +57,8 @@ class OfflineControlNode(Node):
         self.force_source=int(msg.source)
         self.force=MeasuredForce(tuple(float(v) for v in msg.force_n),tuple(int(v) for v in msg.rx_monotonic_ns),tuple(bool(v) for v in msg.valid),tuple(int(v) for v in msg.fault_codes))
     def on_raw_force(self,msg): self.raw_force=msg
+    def on_feedforward(self,msg):
+        self.feedforward=(tuple(float(v) for v in msg.torque_nm), (int(msg.sample_monotonic_ns),)*6)
     def tick(self):
         s=self.session
         if not s or s.mode is Mode.FAULT: return
@@ -62,10 +71,13 @@ class OfflineControlNode(Node):
             if (now-self.target_ns)*1e-9 > float(self.get_parameter('target_max_age_s').value):
                 raise ValueError('desired lengths stale')
             p=self.position; stamps=tuple(int(v) for v in p.per_axis_rx_done_monotonic_ns)
-            age = s.pid.config.max_age if s.mode is Mode.PID_TORQUE else s.force_loop.max_age
+            age = s.pid.config.max_age if s.mode in (Mode.PID_TORQUE, Mode.FF_PID_TORQUE) else s.force_loop.max_age
             if any(t <= 0 or t > now or (now-t)*1e-9 > age for t in stamps):
                 raise ValueError('position feedback stale')
             if any(p.fault_codes): raise ValueError('position feedback fault')
+            if s.mode is Mode.FF_PID_TORQUE and self.feedforward is None:
+                if (now-self.started_ns)*1e-9 <= float(self.get_parameter('startup_timeout_s').value): return
+                raise ValueError('torque feedforward missing')
             if s.mode is Mode.ACTUATOR_FORCE_CONTROL:
                 if self.force is not None and any(self.force.faults): raise ValueError('force feedback fault')
                 if self.force is None or self.force_source not in (1,2) or not all(self.force.valid):
@@ -75,12 +87,13 @@ class OfflineControlNode(Node):
                     raise ValueError('force feedback stale')
                 self.force_ready=True
             if stamps == self.last_position_ns: return
-            cmd=s.cycle(self.target,list(p.positions_meters),stamps,list(p.fault_codes),now,self.force)
+            cmd=s.cycle(self.target,list(p.positions_meters),stamps,list(p.fault_codes),now,self.force,self.feedforward)
             self.last_position_ns=stamps
-            state=s.pid.state if s.mode is Mode.PID_TORQUE else s.force_loop.state
-            if s.mode is Mode.PID_TORQUE and not state['primed']:
+            state=s.pid.state if s.mode in (Mode.PID_TORQUE, Mode.FF_PID_TORQUE) else s.force_loop.state
+            if s.mode in (Mode.PID_TORQUE, Mode.FF_PID_TORQUE) and not state['primed']:
                 state=dict(state)
-                state['saturated']=[abs(state['p_nm'][i]+state['i_nm'][i]+state['d_nm'][i]-state['tau_nm'][i]) > 1e-12 for i in range(6)]
+                ff=state.get('feedforward_nm',[0.]*6)
+                state['saturated']=[abs(ff[i]+state['p_nm'][i]+state['i_nm'][i]+state['d_nm'][i]-state['tau_nm'][i]) > 1e-12 for i in range(6)]
             diag={'mode':s.mode.value,'desired_m':self.target,'actual_m':[float(v) for v in p.positions_meters],
                   'position_rx_ns':list(stamps),'position_fault_codes':[int(v) for v in p.fault_codes],
                   'drive_state':'mock_active', 'state':state,'hardware_write_count':0,

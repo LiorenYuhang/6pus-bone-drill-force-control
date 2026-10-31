@@ -2,6 +2,8 @@
 
 这套代码不控制真实设备。`offline_node.py` 默认关闭，只能构造 `MockTorqueBackend` 和 `MockForceBus`；`hardware_write_count = 0`。不要将此状态当成真机准入或控制性能结论。现有 J14、PID、DS-SCTDE、TDE 和位置控制链没有被替换。
 
+`FF_PID_TORQUE` 是新增的 Mock 输出模式：复用现有 IMU/IK 目标长度和六轴位置反馈，额外订阅 `/research_force_torque_mock/feedforward_torque`（`pus6_research_msgs/msg/TorqueCommand`），其中 `torque_nm` 是调用方提供的六轴电机轴力矩前馈，`sample_monotonic_ns` 必须与控制进程使用相同的主机单调时钟。该消息不是 IMU 姿态前馈，也不由节点自行生成；缺失或过期会报故障。合成值只送 Mock 和诊断话题，不能驱动电机。硬件只读状态帧中的原始力和 ADC 已经在 `/research_force_torque_mock/raw_force_feedback` 及 `telemetry.jsonl` 中记录，未确认物理单位和标定前不得视为 N 或实际轴力矩。
+
 ## 两条控制路径
 
 * `PID_TORQUE`：输入 `q_d` 和 `q` 均为 m，误差 `q_d - q`。沿用既有 `JointTorquePID`，输出 `TorqueNm`，发布 `TorqueCommand.torque_nm`（N·m）。每轴 `kp` 的单位为 N·m/m，`ki` 为 N·m/(m·s)，`kd` 为 N·m·s/m；`torque_limit` 为 N·m，`slew_limit` 为 N·m/s，`direction` 是每轴符号。控制器使用每轴反馈接收时间计算实际 dt，`min_dt`、`max_dt`、`max_age` 和 `derivative_tau` 的单位为 s。积分对幅值及变化率饱和进行条件抗饱和。首帧只初始化，不输出。现有 PID 原本已按 N·m 定义，并无证据表明此前将它送入位置命令；新增强类型命令与 Mock 链路防止这种误接。未发现可确认的电机轴力矩命令协议，真实力矩适配器**不可用**。

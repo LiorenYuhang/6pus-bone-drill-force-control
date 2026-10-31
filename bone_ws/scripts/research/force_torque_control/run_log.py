@@ -15,6 +15,7 @@ class RunLog(Node):
             self.create_subscription(String,topic,lambda m,n=name:self.text_event(n,m),10)
         self.create_subscription(RawMotorStatus,'/research_force_status/raw_status',self.raw_status,10)
         self.create_subscription(TorqueCommand,'/research_force_torque_mock/torque_command',lambda m:self.command('torque',m.torque_nm,m.sample_monotonic_ns),10)
+        self.create_subscription(TorqueCommand,'/research_force_torque_mock/feedforward_torque',lambda m:self.record('feedforward_torque',{'values':list(m.torque_nm),'unit':'N m','sample_monotonic_ns':int(m.sample_monotonic_ns)}),10)
         self.create_subscription(AxialForceCommand,'/research_force_torque_mock/force_command',lambda m:self.command('force',m.force_n,m.sample_monotonic_ns),10)
     def record(self,kind,data):
         self.stream.write(json.dumps({'kind':kind,'host_monotonic_ns':time.monotonic_ns(),'data':data},allow_nan=False)+'\n')

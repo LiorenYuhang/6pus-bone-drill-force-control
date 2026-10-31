@@ -25,7 +25,7 @@ REPO=HERE.parents[3]
 def make_parser():
     p=argparse.ArgumentParser(description='Mock-only 6PUS research runtime')
     p.add_argument('--config',required=True)
-    p.add_argument('--mode',choices=['PID_TORQUE','ACTUATOR_FORCE_CONTROL','DS_SCTDE'])
+    p.add_argument('--mode',choices=['PID_TORQUE','FF_PID_TORQUE','ACTUATOR_FORCE_CONTROL','DS_SCTDE'])
     p.add_argument('--input',choices=['synthetic','external','hardware-readonly'])
     p.add_argument('--status-source',choices=['mock','hardware'],help='required provenance for raw status; hardware-readonly explicitly opens read-only sources')
     p.add_argument('--duration',type=float,default=0.,help='seconds; 0 runs until Ctrl+C')
@@ -38,10 +38,10 @@ def main(argv=None):
     if c.get('backend') != 'mock': raise ValueError('real backend unavailable; select mock')
     mode=args.mode or c['mode']; source=args.input or c.get('input_mode','external')
     status_source=args.status_source or c.get('status_source','mock')
-    if mode not in ('PID_TORQUE','ACTUATOR_FORCE_CONTROL','DS_SCTDE'): raise ValueError('mode unavailable')
+    if mode not in ('PID_TORQUE','FF_PID_TORQUE','ACTUATOR_FORCE_CONTROL','DS_SCTDE'): raise ValueError('mode unavailable')
     if source not in ('synthetic','external','hardware-readonly'): raise ValueError('invalid input_mode')
-    if source=='hardware-readonly' and (mode!='PID_TORQUE' or status_source!='hardware'):
-        raise ValueError('hardware-readonly requires PID_TORQUE and hardware status source; output remains mock')
+    if source=='hardware-readonly' and (mode not in ('PID_TORQUE','FF_PID_TORQUE') or status_source!='hardware'):
+        raise ValueError('hardware-readonly requires PID_TORQUE or FF_PID_TORQUE and hardware status source; output remains mock')
     if status_source not in ('mock','hardware') or (source=='synthetic' and status_source!='mock'): raise ValueError('invalid status provenance')
     confirmed=c.get('mock_gf_assumption') is True if status_source=='mock' else c.get('force_unit_confirmed') is True
     if not math.isfinite(args.duration) or args.duration<0: raise ValueError('invalid duration')
