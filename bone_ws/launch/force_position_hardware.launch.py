@@ -23,8 +23,10 @@ def start(context):
 
 def generate_launch_description():
     root=Path(__file__).resolve().parents[1]
+    saved=root/'scripts/research/force_position_control/calibrated_config.json'
+    default_config=saved if saved.exists() else root/'scripts/research/force_position_control/hardware_config.json'
     return LaunchDescription([
-        DeclareLaunchArgument('config',default_value=str(root/'scripts/research/force_position_control/hardware_config.json')),
+        DeclareLaunchArgument('config',default_value=str(default_config)),
         DeclareLaunchArgument('mode',default_value='read-only'),
         DeclareLaunchArgument('select_servo',default_value='false'),
         DeclareLaunchArgument('hold_current',default_value='false'),

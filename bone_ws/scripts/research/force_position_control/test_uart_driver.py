@@ -1,7 +1,7 @@
 import pytest
 from pus6_motor_driver.fake_bus import FakeBus
 from uart_driver import SixAxisPositionDrive
-from calibration import affine_calibration
+from calibration import affine_calibration, relative_config
 
 
 def drive():
@@ -54,3 +54,14 @@ def test_signed_newton_calibration_and_nonzero_loaded_reference():
     assert c['newtons_per_raw']==pytest.approx([-.02]*6)
     assert c['raw_zero']==pytest.approx([150.]*6)
     with pytest.raises(ValueError): affine_calibration([1.]*6,[1.]*6,[0.]*6,[1.]*6)
+
+
+def test_retare_preserves_six_axis_scales_and_tuned_relative_gains():
+    c={'controller':{'force_unit':'relative_raw','kp':[1.,2.,3.,4.,5.,6.]},
+       'calibration':{'kind':'relative_tare','relative_scale':[1.,-1.,2.,-2.,3.,-3.]}}
+    result=relative_config(c,[10.,20.,30.,40.,50.,60.],{'samples':123})
+    assert result['controller']==c['controller']
+    assert result['calibration']['raw_zero']==[10.,20.,30.,40.,50.,60.]
+    assert result['calibration']['relative_scale']==c['calibration']['relative_scale']
+    assert result['calibration']['absolute_force_calibrated'] is False
+    assert 'newtons_per_raw' not in result['calibration']

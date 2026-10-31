@@ -9,6 +9,7 @@ from pus6_motor_driver.fake_bus import FakeBus
 from ros_node import ForcePositionNode
 from runtime import UartNode, SessionLog, HERE, load_config
 from uart_driver import SixAxisPositionDrive
+from calibration import relative_config
 
 
 def test_dds_force_position_output_reaches_position_protocol(tmp_path):
@@ -55,3 +56,19 @@ def test_dds_force_position_output_reaches_position_protocol(tmp_path):
 def test_uncalibrated_active_rejected_before_port_access():
     with pytest.raises(ValueError,match='calibration required'):
         load_config(HERE/'hardware_config.json',active=True,hold=False)
+
+
+def test_relative_runtime_does_not_publish_or_record_calibrated_newtons(tmp_path):
+    c=relative_config(json.loads((HERE/'hardware_config.json').read_text()),[100.]*6,{})
+    rclpy.init(); log=SessionLog(tmp_path/'relative.jsonl')
+    uart=UartNode(c,log,active=False,hold_current=False,select_servo=False)
+    bus=FakeBus()
+    uart.drive=SixAxisPositionDrive(bus,max_start_delta_steps=20,max_cycle_delta_steps=2,event=log.record)
+    try:
+        uart.publish_snapshot(uart.drive.read())
+        assert uart.relative_tared and not uart.calibrated
+        assert uart.latest_feedback['force_relative']==[-100.]*6
+        assert uart.latest_feedback['force_n'] is None
+        assert uart.latest_feedback['force_unit']=='relative_raw'
+    finally:
+        uart.destroy_node(); log.close(); rclpy.shutdown()

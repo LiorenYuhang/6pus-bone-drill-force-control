@@ -22,7 +22,7 @@ class ForcePositionNode(Node):
         self.declare_parameter('force_topic','/research_force_torque_mock/raw_force_feedback')
         self.declare_parameter('anchor_to_first_feedback',False)
         config=json.loads(self.get_parameter('config_json').value)
-        self.controller=ForcePositionController(Config(**config['controller']))
+        self.controller=ForcePositionController(Config.from_document(config['controller']))
         self.shaper_config=config['shaper']
         self.shaper=None; self.last_shaper_ns=None
         self.target=None; self.target_ns=0; self.position=None; self.force=None

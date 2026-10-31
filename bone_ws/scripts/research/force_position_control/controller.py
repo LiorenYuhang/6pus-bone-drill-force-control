@@ -1,6 +1,6 @@
 """Six-axis force-position research controller. No driver or ROS dependencies.
 
-All force calibration and gains must come from the caller. This module does not
+All force calibration or relative-zero references and gains come from the caller. This module does not
 establish their physical validity, motor ownership, or a safe machine state.
 """
 from dataclasses import dataclass
@@ -15,19 +15,34 @@ def vec(v, name):
 
 @dataclass(frozen=True)
 class Config:
-    kp: tuple                 # N/m
-    ki: tuple                 # N/(m s)
-    kd: tuple                 # N s/m
-    force_limit_n: tuple       # N, symmetric
-    admittance_m_per_ns: tuple  # m/(N s), sign includes mechanics and sensor direction
+    kp: tuple                 # force_unit/m; legacy field names below retain SI API compatibility
+    ki: tuple                 # force_unit/(m s)
+    kd: tuple                 # force_unit s/m
+    force_limit_n: tuple       # force_unit, symmetric; legacy SI API name
+    admittance_m_per_ns: tuple  # m/(force_unit s); legacy SI API name
     correction_limit_m: tuple # m, symmetric
     correction_rate_m_s: tuple # m/s, symmetric
-    raw_zero: tuple           # calibrated 0x2C zero, raw units
-    newtons_per_raw: tuple    # calibrated N/raw, signed
+    raw_zero: tuple           # absolute or user-defined relative 0x2C reference
+    newtons_per_raw: tuple    # signed force_unit/raw; legacy SI API name
     max_dt_s: float
     max_age_s: float
+    force_unit: str = 'N'     # relative_raw uses matching relative gains and no N claims
+
+    @classmethod
+    def from_document(cls, values):
+        values=dict(values)
+        if values.get('force_unit','N')=='relative_raw':
+            # Retain the numerical PID implementation and legacy SI API while
+            # exposing relative-unit parameter names in saved configurations.
+            for public,legacy in (('force_limit_relative','force_limit_n'),
+                                  ('admittance_m_per_relative_s','admittance_m_per_ns'),
+                                  ('relative_scale','newtons_per_raw')):
+                values[legacy]=values.pop(public)
+        return cls(**values)
 
     def __post_init__(self):
+        if self.force_unit not in ('N','relative_raw'):
+            raise ValueError('force_unit must be N or relative_raw')
         for name in ('kp','ki','kd','force_limit_n','admittance_m_per_ns',
                      'correction_limit_m','correction_rate_m_s','raw_zero','newtons_per_raw'):
             object.__setattr__(self,name,vec(getattr(self,name),name))
@@ -56,6 +71,15 @@ class ForcePositionController:
         self.fault=None
         self.state=None
 
+    def describe_state(self, state, raw):
+        state['force_unit']=self.config.force_unit
+        state['delta_force_raw']=[raw[i]-self.config.raw_zero[i] for i in range(6)]
+        if self.config.force_unit=='relative_raw':
+            for name in ('force_actual','force_cmd','force_error'):
+                if name+'_n' in state:
+                    state[name+'_relative']=state.pop(name+'_n')
+        return state
+
     def update(self, desired_m, actual_m, raw_force, feedback_ns, valid, faults, now_ns):
         if self.fault:
             raise RuntimeError(self.fault)
@@ -72,7 +96,7 @@ class ForcePositionController:
                 raise ValueError('nonfinite input')
             if self.last_ns is None:
                 self.last_ns=tuple(feedback_ns); self.prev_error=e
-                self.state={'primed':True,'error_m':e,'force_actual_n':measured}
+                self.state=self.describe_state({'primed':True,'error_m':e,'force_actual_n':measured},raw)
                 return None
             dts=[(feedback_ns[i]-self.last_ns[i])*1e-9 for i in range(6)]
             if any(not 0<dt<=self.config.max_dt_s for dt in dts):
@@ -97,9 +121,9 @@ class ForcePositionController:
                 force_cmd.append(force); force_error.append(ferr)
             self.integral=integral; self.correction=correction
             self.last_ns=tuple(feedback_ns); self.prev_error=e
-            self.state={'primed':False,'error_m':e,'force_cmd_n':force_cmd,
+            self.state=self.describe_state({'primed':False,'error_m':e,'force_cmd_n':force_cmd,
                         'force_actual_n':measured,'force_error_n':force_error,
-                        'correction_m':correction[:],'position_command_m':commands[:]}
+                        'correction_m':correction[:],'position_command_m':commands[:]},raw)
             return tuple(commands)
         except (ValueError,TypeError,OverflowError) as exc:
             self.fault=str(exc)

@@ -39,3 +39,14 @@ def test_invalid_feedback_latches(kwargs):
     c=ForcePositionController(config()); step(c,1_000_000_000)
     with pytest.raises(RuntimeError): step(c,1_100_000_000,**kwargs)
     with pytest.raises(RuntimeError): step(c,1_200_000_000)
+
+
+def test_relative_unit_preserves_signed_force_error_without_newton_labels():
+    c=ForcePositionController(config(newtons_per_raw=(1.,-1.,1.,-1.,1.,-1.),force_unit='relative_raw'))
+    step(c,1_000_000_000,q=0.)
+    step(c,1_100_000_000,q=0.,raw=102)
+    assert c.state['force_actual_relative']==[2.,-2.,2.,-2.,2.,-2.]
+    assert c.state['force_error_relative']==[-2.,2.,-2.,2.,-2.,2.]
+    assert c.state['delta_force_raw']==[2.]*6
+    assert c.state['force_unit']=='relative_raw'
+    assert not any(k.endswith('_n') for k in c.state)

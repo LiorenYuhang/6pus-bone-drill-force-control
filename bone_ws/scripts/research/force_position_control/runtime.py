@@ -66,11 +66,16 @@ class UartNode(Node):
         self.pos=self.create_publisher(TimedJointFeedback,'/force_position/position_feedback',10)
         self.raw=self.create_publisher(RawForceFeedback,'/force_position/raw_force_feedback',10)
         self.force=self.create_publisher(ForceFeedback,'/force_position/force_feedback',10)
+        self.relative_force=self.create_publisher(Float64MultiArray,'/force_position/relative_force',10)
         self.diag=self.create_publisher(String,'/force_position/uart_state',10)
         self.create_subscription(Float64MultiArray,'/research_force_position/desired_lengths_m',self.on_target,10)
         self.create_subscription(Empty,'/force_position/stop',self.on_stop,10)
         self.calibration=config.get('calibration')
-        self.calibrated=isinstance(self.calibration,dict) and all(
+        self.relative_tared=isinstance(self.calibration,dict) and self.calibration.get('kind')=='relative_tare' and all(
+            isinstance(self.calibration.get(n),list) and len(self.calibration[n])==6 and
+            all(isinstance(x,(int,float)) and math.isfinite(x) and (x!=0 if n=='relative_scale' else True) for x in self.calibration[n])
+            for n in ('raw_zero','relative_scale'))
+        self.calibrated=not self.relative_tared and isinstance(self.calibration,dict) and all(
             isinstance(self.calibration.get(n),list) and len(self.calibration[n])==6 and
             all(isinstance(x,(int,float)) and math.isfinite(x) and (x!=0 if n=='newtons_per_raw' else True) for x in self.calibration[n])
             for n in ('raw_zero','newtons_per_raw'))
@@ -96,7 +101,12 @@ class UartNode(Node):
         f.rx_monotonic_ns=ts; f.force_g_raw=[s.force_g for s in rows]; f.force_adc=[s.force_adc for s in rows]
         f.fault_codes=p.fault_codes
         f.valid=[s.error_code==0 and 0<=s.force_adc<=4095 and 0<=now-t<=self.config['feedback_max_age_s']*1e9 for s,t in zip(rows,ts)]
-        values=None
+        values=None; relative=None; delta_raw=None
+        if isinstance(self.calibration,dict) and isinstance(self.calibration.get('raw_zero'),list):
+            delta_raw=[s.force_g-self.calibration['raw_zero'][i] for i,s in enumerate(rows)]
+        if self.relative_tared:
+            relative=[delta_raw[i]*self.calibration['relative_scale'][i] for i in range(6)]
+            self.relative_force.publish(Float64MultiArray(data=relative))
         if self.calibrated:
             c=self.calibration
             values=[(s.force_g-c['raw_zero'][i])*c['newtons_per_raw'][i] for i,s in enumerate(rows)]
@@ -106,6 +116,8 @@ class UartNode(Node):
         self.pos.publish(p); self.raw.publish(f)
         data={'positions_steps':[int(s.current_position) for s in rows],'position_m':list(p.positions_meters),
               'force_raw':[int(s.force_g) for s in rows],'force_adc':[int(s.force_adc) for s in rows],'force_n':values,
+              'delta_force_raw':delta_raw,'force_relative':relative,
+              'force_unit':'relative_raw' if self.relative_tared else 'N' if self.calibrated else 'unscaled_raw',
               'rx_ns':ts,'fault_codes':[int(s.error_code) for s in rows],'valid':[bool(v) for v in f.valid],
               'active':self.active,'hold_current':self.hold,
               'position_acknowledgements':self.drive.position_acknowledgements}
@@ -183,17 +195,21 @@ def load_config(path,*,active,hold):
     if active and not hold:
         cal=c.get('calibration')
         if not isinstance(cal,dict):
-            raise ValueError('calibration required: use calibration.py with known axial forces; current loaded force is not zero')
-        cfg=dict(c['controller'],raw_zero=cal.get('raw_zero'),newtons_per_raw=cal.get('newtons_per_raw'))
-        try: Config(**cfg)
-        except (TypeError,ValueError) as exc: raise ValueError('invalid or missing physical force calibration: '+str(exc)) from exc
+            raise ValueError('calibration required: save a relative reference with calibration.py --tare, or supply known-force calibration')
+        if cal.get('kind')=='relative_tare':
+            cfg=dict(c['controller'],force_unit='relative_raw',raw_zero=cal.get('raw_zero'),relative_scale=cal.get('relative_scale'))
+        else:
+            cfg=dict(c['controller'],raw_zero=cal.get('raw_zero'),newtons_per_raw=cal.get('newtons_per_raw'))
+        try: Config.from_document(cfg)
+        except (KeyError,TypeError,ValueError) as exc: raise ValueError('invalid saved force reference or calibration: '+str(exc)) from exc
         c['control_config']={'controller':cfg,'shaper':c['shaper']}
     return c
 
 
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--config',default=str(HERE/'hardware_config.json'))
+    saved=HERE/'calibrated_config.json'
+    p.add_argument('--config',default=str(saved if saved.exists() else HERE/'hardware_config.json'))
     group=p.add_mutually_exclusive_group(required=True)
     group.add_argument('--active',action='store_true',help='send real 0x29 position commands')
     group.add_argument('--read-only',action='store_true',help='real sensors; no register writes')
