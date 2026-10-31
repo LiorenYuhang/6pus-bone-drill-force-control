@@ -54,4 +54,6 @@ class ImuToLengths:
         shaped=self.shaper.update(target,dt)
         self.previous_ns=now_ns
         return {'pose_m_rad':pose,'error_world_rad':error.tolist(),'residual_world_rad':residual.tolist(),
+                'base_relative_rpy_rad':Rotation.from_matrix(rb).as_euler('xyz').tolist(),
+                'platform_relative_rpy_rad':Rotation.from_matrix(rp).as_euler('xyz').tolist(),
                 'ik_lengths_m':list(target),'desired_lengths_m':shaped,'dt_s':dt}

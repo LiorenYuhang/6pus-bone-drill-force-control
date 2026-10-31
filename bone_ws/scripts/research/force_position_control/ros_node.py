@@ -17,17 +17,22 @@ class ForcePositionNode(Node):
         self.declare_parameter('config_json','{}')
         self.declare_parameter('target_max_age_s',.2)
         self.declare_parameter('status_source',2)
+        self.declare_parameter('desired_topic','/research_force_torque_mock/desired_lengths_m')
+        self.declare_parameter('position_topic','/research_force_torque_mock/position_feedback')
+        self.declare_parameter('force_topic','/research_force_torque_mock/raw_force_feedback')
+        self.declare_parameter('anchor_to_first_feedback',False)
         config=json.loads(self.get_parameter('config_json').value)
         self.controller=ForcePositionController(Config(**config['controller']))
         self.shaper_config=config['shaper']
         self.shaper=None; self.last_shaper_ns=None
         self.target=None; self.target_ns=0; self.position=None; self.force=None
         self.last_stamps=None; self.fault=None
+        self.target_offset=None
         self.out=self.create_publisher(Float64MultiArray,'~/desired_lengths_m',10)
         self.diag=self.create_publisher(String,'~/diagnostics',10)
-        self.create_subscription(Float64MultiArray,'/research_force_torque_mock/desired_lengths_m',self.on_target,10)
-        self.create_subscription(TimedJointFeedback,'/research_force_torque_mock/position_feedback',self.on_position,10)
-        self.create_subscription(RawForceFeedback,'/research_force_torque_mock/raw_force_feedback',self.on_force,10)
+        self.create_subscription(Float64MultiArray,self.get_parameter('desired_topic').value,self.on_target,10)
+        self.create_subscription(TimedJointFeedback,self.get_parameter('position_topic').value,self.on_position,10)
+        self.create_subscription(RawForceFeedback,self.get_parameter('force_topic').value,self.on_force,10)
         self.create_timer(.02,self.tick)
 
     def on_target(self,msg): self.target=list(msg.data); self.target_ns=time.monotonic_ns()
@@ -53,10 +58,13 @@ class ForcePositionNode(Node):
             if stamps==self.last_stamps:
                 return
             actual=list(p.positions_meters)
+            if self.target_offset is None:
+                self.target_offset=[actual[i]-self.target[i] for i in range(6)] if self.get_parameter('anchor_to_first_feedback').value else [0.]*6
+            desired=[self.target[i]+self.target_offset[i] for i in range(6)]
             if self.shaper is None:
                 self.shaper=StatefulJerkLimitedShaper(initial_positions=actual,**self.shaper_config)
             faults=[int(a) | int(b) for a,b in zip(p.fault_codes,f.fault_codes)]
-            corrected=self.controller.update(self.target,actual,list(f.force_g_raw),stamps,
+            corrected=self.controller.update(desired,actual,list(f.force_g_raw),stamps,
                                               list(f.valid),faults,now)
             self.last_stamps=stamps
             if corrected is None:
@@ -64,9 +72,9 @@ class ForcePositionNode(Node):
                 return
             shaped=self.shaper.update(corrected,(now-self.last_shaper_ns)*1e-9)
             self.last_shaper_ns=now
-            data=dict(self.controller.state, shaped_command_m=shaped, source=int(f.source),
+            data=dict(self.controller.state, desired_m=desired, actual_m=actual, shaped_command_m=shaped, source=int(f.source),
                       raw_force=[int(v) for v in f.force_g_raw], force_adc=[int(v) for v in f.force_adc],
-                      feedback_ns=list(stamps), output='ROS topic only')
+                      feedback_ns=list(stamps), output='position target published')
             self.diag.publish(String(data=json.dumps(data,allow_nan=False)))
             self.out.publish(Float64MultiArray(data=shaped))
         except Exception as exc:

@@ -11,8 +11,8 @@ from std_msgs.msg import Float64MultiArray, String
 from imu_chain import ImuToLengths, quat
 
 class ImuResearchNode(Node):
-    def __init__(self, parameter_overrides=None):
-        super().__init__('research_imu_lengths',parameter_overrides=parameter_overrides)
+    def __init__(self, parameter_overrides=None, cli_args=None):
+        super().__init__('research_imu_lengths',parameter_overrides=parameter_overrides,cli_args=cli_args)
         self.declare_parameter('enabled',False); self.declare_parameter('config_json','{}')
         self.declare_parameter('period_s',.02); self.declare_parameter('imu_max_age_s',.2)
         self.declare_parameter('startup_timeout_s',.2); self.declare_parameter('reference_mode','configured')
