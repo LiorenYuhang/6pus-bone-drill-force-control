@@ -13,6 +13,24 @@ def vec(v, name):
     return tuple(float(x) for x in v)
 
 
+def position_bounds_from_geometry(g, lower_steps=None, upper_steps=None):
+    """Original absolute step range intersected with stroke and drive limits.
+
+    Legacy normal-motion/software planning envelopes do not define the stroke.
+    """
+    lower=[]; upper=[]
+    for i in range(6):
+        lo=g.absolute_raw_min_steps
+        hi=g.absolute_raw_max_steps
+        if lower_steps is not None: lo=max(lo,lower_steps[i])
+        if upper_steps is not None: hi=min(hi,upper_steps[i])
+        lower.append(max(g.stroke_min_m,g.operating_home_stroke_m[i]+(lo-g.operating_home_raw_steps[i])*g.meters_per_step))
+        upper.append(min(g.stroke_max_m,g.operating_home_stroke_m[i]+(hi-g.operating_home_raw_steps[i])*g.meters_per_step))
+    if any(lo>=hi for lo,hi in zip(lower,upper)):
+        raise ValueError('no usable position range within geometry and drive limits')
+    return tuple(lower),tuple(upper)
+
+
 @dataclass(frozen=True)
 class Config:
     kp: tuple                 # force_unit/m; legacy field names below retain SI API compatibility

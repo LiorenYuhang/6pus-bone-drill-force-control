@@ -4,17 +4,25 @@ import time
 from pus6_motor_driver.motor import Motor
 from pus6_motor_driver.safety import validate_status_feedback
 from pus6_kinematics.geometry_config import load_geometry_config
+from controller import position_bounds_from_geometry
 
 
 class SixAxisPositionDrive:
-    def __init__(self, bus, *, max_start_delta_steps, max_cycle_delta_steps, event, clock=time.monotonic_ns):
-        for value in (max_start_delta_steps,max_cycle_delta_steps):
+    def __init__(self, bus, *, max_start_delta_steps, max_cycle_delta_steps, event, clock=time.monotonic_ns,
+                 max_speed_m_s=None):
+        for value in (v for v in (max_cycle_delta_steps,max_start_delta_steps) if v is not None):
             if not isinstance(value,int) or value<=0:
                 raise ValueError('positive integer motion limits required')
         self.bus=bus; self.event=event; self.clock=clock
         self.motors=[Motor(bus,i) for i in range(1,7)]
         self.geometry=load_geometry_config()
         self.max_start=max_start_delta_steps; self.max_cycle=max_cycle_delta_steps
+        if max_speed_m_s is not None:
+            if isinstance(max_speed_m_s,(int,float)): max_speed_m_s=[max_speed_m_s]*6
+            if len(max_speed_m_s)!=6 or any(not math.isfinite(v) or v<=0 for v in max_speed_m_s):
+                raise ValueError('six positive finite speed limits required')
+            max_speed_m_s=tuple(max_speed_m_s)
+        self.max_speed=max_speed_m_s; self.dispatched_m=None; self.last_command_ns=None
         self.anchor=None; self.previous=None; self.lower=[]; self.upper=[]; self.modes=[]
         self.wrote=False; self.paused=False; self.fault=None
         self.write_attempts=0; self.position_acknowledgements=0
@@ -59,6 +67,8 @@ class SixAxisPositionDrive:
                         # not used by the established position-servo entry.
                         self.modes[i]=1
                         self.event('servo_mode_write_acknowledged',{'axis':i+1,'mode_commanded':1})
+        self.dispatched_m=self.positions_m(snapshot)
+        self.last_command_ns=self.clock()
         return snapshot
 
     def read(self):
@@ -74,17 +84,44 @@ class SixAxisPositionDrive:
         return [g.operating_home_stroke_m[i]+(s.current_position-g.operating_home_raw_steps[i])*g.meters_per_step
                 for i,s in enumerate(snapshot['status'])]
 
+    def position_bounds_m(self):
+        return position_bounds_from_geometry(self.geometry,self.lower,self.upper)
+
     def command(self, positions_m):
         if self.fault or self.paused or self.anchor is None or self.modes!=[1]*6:
             raise RuntimeError('position drive not active')
         if len(positions_m)!=6 or not all(math.isfinite(float(x)) for x in positions_m):
             raise ValueError('six finite position targets required')
+        if self.max_cycle is None and self.max_speed is None:
+            raise ValueError('a time-based speed or per-cycle limit is required')
         g=self.geometry
-        steps=[int(round(g.operating_home_raw_steps[i]+(float(x)-g.operating_home_stroke_m[i])/g.meters_per_step))
+        now=self.clock()
+        lower,upper=self.position_bounds_m()
+        # Reject an out-of-stroke request before any speed shaping or UART write.
+        requested_steps=[int(round(g.operating_home_raw_steps[i]+(float(x)-g.operating_home_stroke_m[i])/g.meters_per_step))
                for i,x in enumerate(positions_m)]
+        for i,s in enumerate(requested_steps):
+            encoded_m=g.operating_home_stroke_m[i]+(s-g.operating_home_raw_steps[i])*g.meters_per_step
+            if (not math.nextafter(lower[i],-math.inf)<=encoded_m<=math.nextafter(upper[i],math.inf)
+                    or not self.lower[i]<=s<=self.upper[i]):
+                raise ValueError(f'axis {i+1}: position target exceeds drive limits')
+        dispatched=[float(x) for x in positions_m]
+        if self.max_speed is not None:
+            dt=(now-self.last_command_ns)*1e-9
+            if dt<=0: raise ValueError('nonpositive command interval')
+            dispatched=[old+max(-v*dt,min(v*dt,target-old))
+                        for old,target,v in zip(self.dispatched_m,dispatched,self.max_speed)]
+        steps=[int(round(g.operating_home_raw_steps[i]+(x-g.operating_home_stroke_m[i])/g.meters_per_step))
+               for i,x in enumerate(dispatched)]
         # Validate all six before the first write. No partial validation/writes.
         for i,s in enumerate(steps):
-            if not self.lower[i]<=s<=self.upper[i] or abs(s-self.anchor[i])>self.max_start or abs(s-self.previous[i])>self.max_cycle:
+            # Check the target actually encoded on the wire. Sub-step shaper
+            # residuals at an endpoint must not reject a valid 0/2000-step target.
+            encoded_m=g.operating_home_stroke_m[i]+(s-g.operating_home_raw_steps[i])*g.meters_per_step
+            if (not math.nextafter(lower[i],-math.inf)<=encoded_m<=math.nextafter(upper[i],math.inf)
+                    or not self.lower[i]<=s<=self.upper[i]
+                    or (self.max_start is not None and abs(s-self.anchor[i])>self.max_start)
+                    or (self.max_cycle is not None and abs(s-self.previous[i])>self.max_cycle)):
                 raise ValueError(f'axis {i+1}: position target exceeds displacement or drive limits')
         rows=[]; times=[]
         try:
@@ -92,7 +129,8 @@ class SixAxisPositionDrive:
                 rows.append(self._write(m,0x29,[s])); times.append(self.clock())
                 self.position_acknowledgements+=1
             self.previous=steps
-            self.event('position_acknowledged',{'targets_steps':steps,'rx_ns':times})
+            self.dispatched_m=dispatched; self.last_command_ns=now
+            self.event('position_acknowledged',{'targets_steps':steps,'requested_steps':requested_steps,'rx_ns':times})
             return {'status':rows,'rx_ns':times}
         except Exception as exc:
             self.fault=str(exc)

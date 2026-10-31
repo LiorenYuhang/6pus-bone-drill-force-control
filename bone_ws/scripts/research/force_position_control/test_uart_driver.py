@@ -65,3 +65,27 @@ def test_retare_preserves_six_axis_scales_and_tuned_relative_gains():
     assert result['calibration']['relative_scale']==c['calibration']['relative_scale']
     assert result['calibration']['absolute_force_calibrated'] is False
     assert 'newtons_per_raw' not in result['calibration']
+
+
+def test_each_axis_time_based_speed_reaches_0x29_without_two_step_cap():
+    bus=FakeBus()
+    bus.positions={i:1000 for i in range(1,7)}; bus.targets=bus.positions.copy()
+    bus.modes={i:1 for i in range(1,7)}; bus.limits={i:(0,2000) for i in range(1,7)}
+    now=[1_000_000_000]
+    speeds=[.017,.016,.015,.014,.013,.012]
+    d=SixAxisPositionDrive(bus,max_start_delta_steps=None,max_cycle_delta_steps=None,
+        max_speed_m_s=speeds,event=lambda *_:None,clock=lambda:now[0])
+    d.initialize(active=True)
+    targets=[.075,.025,.075,.025,.075,.025]
+    elapsed=0.
+    for k in range(240):
+        dt=(.02,.04,.01,.03)[k%4]; elapsed+=dt; now[0]+=round(dt*1e9)
+        d.command(targets)
+        for i,v in enumerate(speeds):
+            direction=1 if i%2==0 else -1
+            expected=.05+direction*min(.025,v*elapsed)
+            expected_steps=round(1000+(expected-.05)/.000025)
+            assert d.previous[i]==expected_steps
+        if k==0: assert all(abs(s-1000)>2 for s in d.previous)
+    assert list(bus.targets.values())==[2000,0,2000,0,2000,0]
+    assert all(e[2]==0x29 for e in bus.events if e[1]==0x32)

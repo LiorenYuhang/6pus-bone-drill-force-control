@@ -141,7 +141,8 @@ class UartNode(Node):
             # this instance's duplicate in-memory audit during long experiments.
             self.bus.write_audit=deque(maxlen=12)
             self.drive=SixAxisPositionDrive(self.bus,max_start_delta_steps=self.config['max_start_delta_steps'],
-                max_cycle_delta_steps=self.config['max_cycle_delta_steps'],event=self.log.record)
+                max_cycle_delta_steps=self.config['max_cycle_delta_steps'],event=self.log.record,
+                max_speed_m_s=self.config['shaper']['max_speed_m_per_sec'])
             snapshot=self.drive.initialize(active=self.active,select_servo=self.select_servo)
             self.initial=self.drive.positions_m(snapshot)
             started=time.monotonic_ns()

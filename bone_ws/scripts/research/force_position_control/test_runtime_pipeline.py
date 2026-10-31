@@ -27,7 +27,9 @@ def test_dds_force_position_output_reaches_position_protocol(tmp_path):
         Parameter('force_topic',value='/force_position/raw_force_feedback')])
     bus=FakeBus(); bus.positions={i:1000 for i in range(1,7)}; bus.targets=bus.positions.copy()
     bus.modes={i:1 for i in range(1,7)}
-    uart.drive=SixAxisPositionDrive(bus,max_start_delta_steps=20,max_cycle_delta_steps=2,event=log.record)
+    uart.drive=SixAxisPositionDrive(bus,max_start_delta_steps=c['max_start_delta_steps'],
+        max_cycle_delta_steps=c['max_cycle_delta_steps'],event=log.record,
+        max_speed_m_s=c['shaper'].get('max_speed_m_per_sec',.017))
     uart.drive.initialize(active=True)
     pub=uart.create_publisher(Float64MultiArray,'/research_force_torque_mock/desired_lengths_m',10)
     ex=SingleThreadedExecutor(); ex.add_node(control); ex.add_node(uart)

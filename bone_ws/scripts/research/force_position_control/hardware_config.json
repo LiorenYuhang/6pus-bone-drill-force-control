@@ -7,7 +7,7 @@
   "imu_max_age_s": 0.2,
   "startup_timeout_s": 5.0,
   "max_start_delta_steps": 20,
-  "max_cycle_delta_steps": 2,
+  "max_cycle_delta_steps": null,
   "calibration": null,
   "controller": {
     "kp": [
@@ -59,20 +59,21 @@
       5e-05
     ],
     "correction_rate_m_s": [
-      2.5e-05,
-      2.5e-05,
-      2.5e-05,
-      2.5e-05,
-      2.5e-05,
-      2.5e-05
+      0.017,
+      0.017,
+      0.017,
+      0.017,
+      0.017,
+      0.017
     ],
     "max_dt_s": 0.2,
     "max_age_s": 0.2
   },
   "shaper": {
-    "max_speed_m_per_sec": 0.0001,
-    "max_accel_m_per_sec2": 0.001,
-    "max_jerk_m_per_sec3": 0.01
+    "max_speed_m_per_sec": 0.017,
+    "max_accel_m_per_sec2": null,
+    "max_jerk_m_per_sec3": null,
+    "enabled": false
   },
   "imu": {
     "base_reference": [
