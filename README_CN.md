@@ -1,195 +1,168 @@
-# 6PUS 骨科并联机器人防抖控制与感知框架
+# 6PUS 力反馈辅助主动稳定控制
 
-> [English](README.md) | [中文]
-> **面向 6-PUS 并联骨科手术机器人的 ROS 2 实时感知与主动防抖控制系统**
+[English](README.md) | [简体中文](README_CN.md)
 
----
+面向移动基座扰动的六电动缸 6PUS Stewart 并联机器人三轴姿态主动稳定研究。系统结合双 IMU、姿态前馈与反馈、逆运动学和电动缸实际受力变化，协调六轴运动，使末端平台尽可能保持初始世界参考姿态。
 
-## 1. 项目简介
+虽然仓库名为 `torque_control`，当前主要实现是**基于受力反馈与动态力—位置映射的辅助位置控制（路线 A）**。电动缸保持位置 Servo 模式（`0x25=1`），通过 `0x29` 接收位置目标。这条链路不向电机发送 N·m 轴力矩指令，也不使用厂家原生力控模式或 `0x27` 目标力接口。
 
-**6PUS-Anti-Vibration** 是面向骨科机器人研究的开源 ROS 2 感知与运动控制框架，适用于 6-PUS（移动副-万向节-球副）并联机构 / Stewart 平台。系统结合笛卡尔运动、轨迹整形与高频多传感器观测，实现主动姿态稳定控制。当前能力、硬件验证与限制见下文。
+## 控制架构
 
----
+路线 A 保留原有基座 IMU 姿态前馈、平台 IMU 反馈、三轴姿态 P/PD 结构和 6PUS 逆运动学，在位置 Servo 前增加六轴位置误差控制器及受力反馈补偿环。
 
-## 2. 当前工程开发状态
+```mermaid
+flowchart TD
+    Base[基座 IMU] --> FF[姿态前馈]
+    Platform[平台 IMU] --> Att[三轴姿态 P/PD]
+    FF --> Att
+    Att --> IK[6PUS 逆运动学]
+    IK --> Ref[以初始实际位置为基准的长度目标]
+    Ref --> Eq[位置误差：期望减实际]
+    Position[六轴实际位置反馈] --> Eq
+    Eq --> PID[六轴位置误差 PID]
+    PID --> Ef[力误差：需求减测量]
+    Raw[六轴实际受力原始值] --> Zero[逐轴保存零点与有符号比例]
+    Zero --> Ef
+    Ef --> Map[限速积分式动态力—位置映射]
+    Map --> Add[叠加位置补偿]
+    Ref --> Add
+    Add --> Shape[可选轨迹整形]
+    Shape --> UART[UART 时间限速与米到步数转换]
+    UART --> Servo[位置 Servo：0x29]
+    Servo --> Robot[6PUS 平台]
+    Robot --> Platform
+    Robot --> Position
+    Robot --> Raw
+```
 
-### 2.1 主动姿态稳定控制
+姿态层沿用原有四元数参考处理、坐标变换及 SO(3) 残差合成。基座相对旋转的逆提供几何前馈，平台姿态误差提供残差反馈。运行程序捕获首组有效双 IMU 参考，并将 IK 长度变化对齐到首组六轴实际位置，不在启动时命令机构前往模型 HOME。稳定参考是由 IMU 建立的初始姿态，并非外部测量得到的绝对姿态。
 
-平台的控制目标是在 Base（基座）运动时，使 Platform（动平台）尽量保持参考姿态。三种方案均已在真实 6PUS 硬件上完成实现与运行：
+### 位置误差、受力反馈与补偿
 
-| 方案 | 方法 |
-| --- | --- |
-| **Base SO(3) Feedforward** | Base IMU 提供基座姿态，用于计算几何补偿；Platform IMU 观察响应并用于验证，不参与残差反馈。 |
-| **Feedforward + Classical P/PD** | 在共同前馈链路上增加 Platform IMU 姿态残差反馈。当前保留形式为 **Roll=P、Pitch/Yaw=PD、Ki=0**。 |
-| **Feedforward + First-order LADRC** | 保留共同前馈；三轴独立线性扩张状态观测器（LESO）估计等效集总扰动，用于一阶 LADRC 残差补偿。 |
-
-技术路线为 **几何补偿 → 姿态残差反馈 → 扰动观测残差控制**。**P/PD 和 LADRC 是同一前馈基础上的两种残差控制方案。**
-
-硬件证据涵盖纯前馈/P/PD 对比、LADRC 空载资格验证，以及偏心负载下 Classical P/PD/LADRC 运行。这些证据支持实现与对比表征，不构成三种方案的统一排名，也未证明 LADRC 全面优于经典控制。历史来源见 2.5。
-
-### 2.2 运行与通信可靠性
-
-运行可靠性工程围绕 UART 阻塞、TX timeout、反馈陈旧、启动丢包与 ROS executor 调度饥饿进行优化：
-
-- **三进程架构**：Parent 负责 ROS 指令入口与协调；UART Child 独占电机串口；Feedback Bridge 消费反馈 IPC 并发布 ROS 反馈。**Compatibility Relay 是外部适配器，不属于核心三个进程。**
-- **通信隔离**：串口执行、反馈发布与 Parent 回调分离；监测反馈连续性、间隔与龄期；诊断处理与关键通信路径解耦。
-- **协调启动**：通过就绪握手协调伺服启动；Parent 使用 `SingleThreadedExecutor`，处理主动订阅负载下已识别的 IPC 租约更新饥饿问题。
-- **生命周期处理**：当前路径支持超时检测、受控暂停与停机。正常 Ctrl+C 退出执行返回 HOME → 六轴暂停 → 清理；故障退出执行故障检测 → 暂停 → 清理，跳过返回 HOME。自动恢复与继续控制尚不支持，也未获资格认证。
-
-| 已记录的真实硬件资格验证 | 范围 |
-| --- | --- |
-| **600s 静态资格验证** | 静态伺服运行与反馈连续性；记录中存在调度重锚事件。 |
-| **Classical P/PD：60s 主动会话** | 名义控制器会话，包含预检、参考捕获与 ACTIVE 运行。 |
-| **LADRC：60s 主动会话** | 名义控制器会话，包含预检、参考捕获与 ACTIVE 运行。 |
-
-这些验证限定于已记录的条件与窗口。静态资格通过不扩大主动控制验证时长；反馈连续不代表无时序抖动。
-
-### 2.3 运动与感知基础
-
-- 六轴 UART 伺服通信，协调执行器指令与伴随反馈。
-- 解析逆运动学（IK）、数值正运动学（FK）与有状态加加速度限制轨迹整形。
-- 双 IMU 姿态感知、时间对齐与 SO(3) 相对姿态处理。
-- `OPERATING_HOME` 是运行参考，各轴约为 **1000 steps**；主动姿态稳定在启动确认此参考后开始。`STORAGE_PARK` 用于存储/断电状态；返回 HOME 与停机按生命周期管理，不作为机械回零过程。
-- HOME 附近局部 command-to-feedback/FK/IMU 跟踪与 HOME 基准单轴包络表征。
-
-已记录的硬件运动、感知与表征证据见 2.5。
-
-### 2.4 验证范围与已知限制
-
-- **工作空间**：HOME 基准单轴包络不等于完整耦合六维工作空间，也不代表任意组合姿态均已认证。
-- **精度**：FK/feedback/IMU 跟踪与执行器分辨率不等于外部绝对定位精度或重复定位精度；后两者仍未完成资格验证。
-- **对比**：各次人工 Base 扰动不同，不能建立严格控制器排名。
-- **控制裕量**：强扰动下存在残差饱和与执行器跟踪滞后；扰动补偿不代表消除所有扰动。
-- **稳定性**：LESO 状态仅确认在**已记录的运行窗口内有界**，不构成一般理论稳定性证明。
-- **恢复**：当前支持超时检测、暂停与停机，不包含自动恢复与控制接管恢复；调度重锚与通信恢复是不同机制。
-
-### 2.5 演示与技术文档
-
-三种 Demo 模式使用共同生产运行架构。[Demo 操作指南](./docs/j14/J14_DEMO_ENTRYPOINTS.md)记录了启动、ACTIVE 运行、正常归 HOME 停机、暂停确认与资源释放的人工实机确认，并提供操作前提与命令。
-
-| 模式 | 入口脚本 |
-| --- | --- |
-| **Base SO(3) Feedforward** | [run_j14_demo_feedforward.sh](./bone_ws/scripts/run_j14_demo_feedforward.sh) |
-| **Feedforward + Classical P/PD** | [run_j14_demo_feedforward_pd.sh](./bone_ws/scripts/run_j14_demo_feedforward_pd.sh) |
-| **Feedforward + First-order LADRC** | [run_j14_demo_feedforward_ladrc.sh](./bone_ws/scripts/run_j14_demo_feedforward_ladrc.sh) |
-
-技术入口：[用户文档](./docs/)、[生产驱动操作说明](./docs/j14/J14_PRODUCTION_DRIVER.md)、[纯前馈/P/PD 对比与指标](./docs/j11/J11_FINAL_CONTROL_COMPARISON.md)、[HOME 附近跟踪证据](./agent_docs/reports/REAL_HARDWARE_PERFORMANCE_SUMMARY.md)与[原始证据索引](./results/README.md)。
-
-**历史来源基线（Historical source baselines）**：以下阶段标识用于保留证据来源，不代表独立的当前能力。历史总结保留原测试条件与状态表述，不用于定义当前生产能力。
-
-| 历史来源基线 | 来源 / 版本 |
-| --- | --- |
-| 运动表征 | [J10](./agent_docs/stages/J10/J10_FINAL_SUMMARY.md) — `v1.0-j10-axis-wise-workspace-qualified` |
-| 纯前馈资格验证 | [J11-M1](./agent_docs/stages/J11/J11_M1_FINAL_SUMMARY.md) — `v1.0-j11-m1-feedforward-hardware-qualified` |
-| 经典 P/PD 基线 | [J11](./agent_docs/stages/J11/J11_FINAL_SUMMARY.md) — `v1.0-j11-attitude-stabilization-frozen` |
-| 经典控制动态/负载表征 | [J12](./agent_docs/stages/J12/J12_FINAL_SUMMARY.md) — `v1.0-j12-classical-dynamic-performance-frozen` |
-| LADRC 工程资格验证 | [J13](./agent_docs/stages/J13/J13_FINAL_SUMMARY.md) — `v1.0-j13-ladrc-attitude-residual-control-qualified` |
-| 运行可靠性基线（CLOSED / FROZEN） | [J14-A](./agent_docs/stages/J14/J14_FINAL_SUMMARY.md) — `v1.0-j14-a-three-process-runtime-reliability-qualified` |
-
-[内部文档索引](./agent_docs/README.md)保留阶段历史、详细分析与交接入口。
-
----
-
-## 3. 代码与文档体系结构 (Repository Layout)
-
-项目严格遵行代码、人读技术知识与机读数据资产三者职责边界隔离：
+[controller.py](bone_ws/scripts/research/force_position_control/controller.py) 对每轴 `i` 执行以下计算：
 
 ```text
-/home/lyapunov/bone_drill/
-├── bone_ws/                               <-- [ROS 2 工作空间] 源代码、功能包、测试用例与运行脚本
-│   ├── src/
-│   │   ├── pus6_msgs/                     # 自定义 ROS 2 消息接口 (TimedJointFeedback, FkStateStamped 等)
-│   │   ├── pus6_kinematics/               # 解析逆解、LM 数值正解与 6pus_geometry.yaml 唯一几何真值源
-│   │   ├── pus6_motor_driver/             # RS485 串口驱动、50Hz 伺服传输与两级安全看门狗
-│   │   ├── pus6_control/                  # 有状态加加速度连续轨迹整形器与控制器
-│   │   ├── pus6_bringup/                  # 系统级 Launch 启动编排与参数配置
-│   │   └── h30_imu/                       # Yesense H30 IMU C++ 驱动与 SO(3) 相对姿态解算
-│   └── scripts/                           # 可复现的实机/仿真运行脚本与验收工具链
-│
-├── agent_docs/                            <-- [Agent 内部工作文档] stage 历史、决策、调参历史、交接、故障审计
-│   ├── stages/                            # 阶段实施方案、验收总结与跨阶段交接规范 (Handoff)
-│   ├── reports/                           # 深度实测分析报告 (J10 工作空间分析、J9.1 动平台力臂分析)
-│   ├── decisions/                         # 架构决策记录 (ADR) 与硬件准入测试报告
-│   ├── frozen/                            # 只读冻结基线清单与代码校验指纹
-│   └── archive/                           # 历史遗留操作手册与过时参考资料
-│
-├── results/                               <-- [机读实验与运行数据] 自动化测试与实机运行生成的数据证据
-│   ├── README.md                          # 数据集索引与实验证据导航
-│   ├── stewart3_j8_figure6_20260916_.../  # 权威 J8 笛卡尔九阶段实机运动全量时序 (Stewart-3 图 6)
-│   ├── j7/                                # 权威 J7 预检与 50Hz 伺服基准 JSON
-│   ├── j9_1/                              # 权威 J9.1 双 IMU 姿态与力臂耦合实测数据集
-│   └── j10/                               # 权威 J10 六自由度安全包络实测量测数据
-│
-├── hardware/                              <-- [硬件与几何数据] 电机选型表、电气接线图与 3D 机械结构
-├── up/                                    <-- [UART 底层验证基线] 独立多电机串口测试台与基线驱动
-├── STM32/                                 <-- [固件] 下位机工程源码
-├── docs/                                 <-- [用户文档] 用户主动查看的学习/操作/教程/技术结果
-└── AGENTS.md                              <-- [全局 Agent 规则] 操作规范、安全红线与工程不变量
+e_q[i,k]       = q_d[i,k] - q[i,k]                         [m]
+I[i,k]         = I[i,k-1] + e_q[i,k] * dt[i]
+D[i,k]         = (e_q[i,k] - e_q[i,k-1]) / dt[i]
+F_cmd[i,k]     = clip(Kp[i]*e_q[i,k] + Ki[i]*I[i,k]
+                     + Kd[i]*D[i,k], -F_limit[i], F_limit[i])
+F_actual[i,k]  = relative_scale[i] * (raw_0x2C[i,k] - raw_zero[i])
+e_F[i,k]       = F_cmd[i,k] - F_actual[i,k]
+v_corr[i,k]    = clip(A[i]*e_F[i,k], -v_limit[i], v_limit[i])
+delta_q[i,k]   = clip(delta_q[i,k-1] + v_corr[i,k]*dt[i],
+                     q_min[i]-q_d[i,k], q_max[i]-q_d[i,k])
+q_cmd[i,k]     = q_d[i,k] + delta_q[i,k]                     [m]
 ```
 
-> **职责边界原则**：
-> - `docs/` = 用户主动需要查看的文档（学习、操作、教程、最终技术结果与汇报入口）。
-> - `agent_docs/` = Agent 内部工作文档（stage 历史、决策、调参历史、交接、故障审计），用户正常不需要查看。
-> - `results/` = 机器程序运行、测试和实机实验产出的 CSV、遥测 JSON 与运行原始日志。
+其中，`q_d` 为对齐初始位置后的 IK 目标，`q` 为实际长度，`dt[i]` 来自各轴相邻主机接收时间戳。力需求饱和且位置误差将继续加深饱和时，PID 保持积分状态；微分项采用位置误差有限差分。首组有效反馈只初始化状态，不发出控制器位置目标。当前保存配置中，姿态控制器和六轴位置误差控制器的 `Ki=Kd=0`；实现仍保留可配置的 PID 结构。
 
----
+**当前 `F_cmd`、`F_actual` 和 `e_F` 使用 `relative_raw`，不是 N。** 这里的 `F` 表示同一相对尺度下的增量受力需求、测量及误差。位置 PID 从长度误差生成需求，不输出电机力矩，也不直接写驱动寄存器。实际受力变化补充了单靠位置误差无法提供的载荷信息。保存的静止参考可能包含重力及静载，相对读数为零不代表物理受力为零。
 
-## 4. 推荐阅读与学习路径 (Recommended Reading Order)
+动态映射将力误差积分为位置偏置，其状态跨采样周期保留，不是静态力—位移乘法，也不是已经实现的质量—弹簧—阻尼模型。当 `relative_scale` 与 `A` 均为正时，在需求不变的情况下，实际受力增加会使位置补偿向减小方向变化。实际物理反馈方向取决于各传感器安装及配置符号。受力反馈直接改变 `e_F` 和 `delta_q`；它通过后续实际位置变化影响位置 PID 输出，并非作为额外输入直接进入位置 PID。
 
-对于首次接触本项目的工程师、研究者或智能体，建议按如下次序阅读：
+修正后的目标经过可选轨迹整形，再由唯一 UART 所有者执行时间限速和步数转换。当前保存配置**关闭额外轨迹滤波**，UART 时间限速仍生效。[ros_node.py](bone_ws/scripts/research/force_position_control/ros_node.py) 将来自同组状态帧的位置与受力配对；六帧依次接收，不代表设备同时采样。[uart_driver.py](bone_ws/scripts/research/force_position_control/uart_driver.py) 在位置写入前统一检查六轴目标，运动写入不自动重试。
 
-1. **宏观概览与基线**：首先通读本文档 [`README_CN.md`](./README_CN.md)（或 [`README.md`](./README.md)），掌握系统整体架构与当前能力。
-2. **ROS 2 全栈技术教程**：研读 [`docs/整体学习参考/6PUS_ROS2_CODE_LEARNING_TUTORIAL.md`](./docs/整体学习参考/6PUS_ROS2_CODE_LEARNING_TUTORIAL.md)，掌握双链路解耦设计、闭式逆解、LM 数值正解及 50Hz 伺服驱动的详细实现。
-3. **权威文档检索地图**：参考 [`agent_docs/README.md`](./agent_docs/README.md)，快速定位具体阶段的技术方案、交接规范与硬件准入报告。
-4. **物理实机操作与安全**：若需操作物理样机，务必在操作前核对 [`docs/整体学习参考/6PUS_SERVO_OPERATION_GUIDE.md`](./docs/整体学习参考/6PUS_SERVO_OPERATION_GUIDE.md)。
-5. **权威实验证据库**：查阅 [`results/README.md`](./results/README.md)，加载并验证物理样机真实飞行数据（如 J8 连续运动数据集）。
+### 与原位置控制方案的区别
 
----
+| 环节 | 对照组：双 IMU 前馈 + Classical P/PD | 实验组：路线 A |
+| --- | --- | --- |
+| 姿态与 IK | 基座前馈、平台姿态反馈、三轴 P/PD、IK | 保留原有上层结构 |
+| 执行器反馈 | 位置 Servo 跟踪长度目标 | 位置误差生成相对受力需求，实际受力变化闭合新增补偿环 |
+| 位置目标 | 原长度目标 | 原目标叠加动态受力补偿 |
+| 驱动接口 | 位置 Servo | 同一位置 Servo，`0x29` |
 
-## 5. 离线公开复现指南 (Offline Public Reproducibility)
+主要对照是独立[原位置控制仓库](https://github.com/LiorenYuhang/6pus-bone-drill-position-control)中的 [J14 Feedforward + Classical P/PD](https://github.com/LiorenYuhang/6pus-bone-drill-position-control/blob/main/bone_ws/scripts/run_j14_demo_feedforward_pd.sh)。路线 A 的独立运行程序不依赖 J14 进程。仓库保留的历史算法和实验不等于当前主控制链，也不能作为这条链路性能改善的证据。
 
-第三方研究人员无需拥有真实 6PUS 样机，即可在纯软件离线环境中构建代码、执行全量单元测试与分析真实硬件数据：
+## 硬件、单位与配置
 
-### 1. 环境准备
-- **操作系统**：Ubuntu 24.04 LTS
-- **ROS 2 版本**：Jazzy Jalisco
-- **Python 版本**：$\ge 3.10$
+| 项目 | 当前实现或设置 |
+| --- | --- |
+| 机构 | 六轴 6PUS 并联平台，执行三轴姿态稳定任务 |
+| 传感器 | 基座及平台 IMU；六轴位置、原始受力量和 ADC 反馈 |
+| 驱动 | 唯一 UART 所有者；位置模式 `0x25=1`；`0x29` 位置目标 |
+| 位置范围 | 0–2000 steps，与实际驱动回读限位及原有几何约束取交集 |
+| 换算 | 1 step = 0.025 mm = 0.000025 m；40 steps/mm |
+| HOME | 几何配置当前定义为六轴各 1000 steps |
+| 软件速度上限 | 六轴均为 17 mm/s，依据 LAF50-024D 厂家标称**空载**速度设置；不代表已测得的负载最大速度或平台运动速度 |
+| 控制周期 | 标称 20 ms，实际反馈间隔另行检查 |
+| 受力表示 | 逐轴清零的 `relative_raw`，尚未完成 N 单位的绝对力标定 |
+| 额外轨迹滤波 | 保存配置中关闭，保留 UART 速度限制 |
+
+[几何配置](bone_ws/src/pus6_kinematics/config/6pus_geometry.yaml)使用 `q[i] = 0.05 + (steps[i]-1000)*0.000025` m 将原始步数转换为 IK 长度坐标。因此，0–2000 steps 对应相对原始零点的 0–50 mm 位移，以及模型坐标中的 0.025–0.075 m；两者是不同参考，不是两种电缸行程。
+
+新增受力反馈不改变机构、几何或可用工作空间。当前补偿没有人为设置的 50 μm 上限，其允许偏置由最终位置边界确定。真实机械、运动学及驱动保护仍然适用；软件命令范围不代表任意六轴组合都满足运动学约束。
+
+运行程序加载 [calibrated_config.json](bone_ws/scripts/research/force_position_control/calibrated_config.json)。其中保存六轴独立的 `raw_zero` 和有符号 `relative_scale`，启动不自动重新清零。位置 PID 的 `kp/ki/kd` 单位分别为 relative/m、relative/(m·s)、relative·s/m；`force_limit_relative` 限制需求，`admittance_m_per_relative_s` 为映射系数 `A`，单位 m/(relative·s)，`correction_rate_m_s` 限制位置补偿速度。具体数值以配置文件为准。保存的符号及比例不表示已完成物理方向或绝对力标定。实现也接受另行完成标定的 N 配置，但那不是当前相对模式。
+
+## NUC 构建与运行
+
+以下命令面向当前安装 ROS 2 Jazzy 的 Ubuntu NUC 工作目录。本次仅发布 README，不同时发布尚未提交的本地运行代码或本地已有启动脚本，因此不表示全新 GitHub 克隆已包含这些未提交文件。更多操作细节见[硬件与配置指南](docs/research/6PUS_FORCE_POSITION_HARDWARE.md)。
+
+需要时构建独立工作区：
 
 ```bash
-# 克隆仓库
-git clone https://github.com/lyapunov/bone_drill.git
-cd bone_drill
-
-# 引入 ROS 2 环境变量
+cd /home/lyapunov/6pus_bone_drill_torque_control/bone_ws
 source /opt/ros/jazzy/setup.bash
+colcon --log-base log/force_position build --base-paths src \
+  --build-base build/force_position --install-base install/force_position
 ```
 
-### 2. 编译工作空间
+启动真实路线 A：
+
 ```bash
-cd bone_ws
-colcon build --symlink-install
-source install/setup.bash
+cd /home/lyapunov/6pus_bone_drill_torque_control
+bash bone_ws/scripts/run_force_position_feedback_pid.sh
 ```
 
-### 3. 执行离线单元与集成测试 (Mock 模式)
-在 Mock / FakeBus 模式下运行软件测试：
+脚本加载 Jazzy 和本工作区 `install/force_position/local_setup.bash`，通过 `/usr/bin/python3` 运行源码程序并加载保存的配置，启动双 IMU 输入和独立 UART 所有者。它允许在当前测量位置选择位置 Servo，不自动回 HOME，也不增加启动 HOME 运动。不要同时运行其他占用电机 UART 的进程。可选参数 `--duration 10` 表示十秒后正常结束。
+
+### 实时监控与日志
+
+另开终端，加载相同环境后查看所需话题：
+
 ```bash
-# 运行 bone_ws 下的软件包测试
-colcon test --ctest-args -R test
-colcon test-result --all
-
-# 运行 J8 图 6 纯旁路记录器单元测试
-pytest scripts/test_j8_figure6_recorder.py -v
+cd /home/lyapunov/6pus_bone_drill_torque_control
+source /opt/ros/jazzy/setup.bash
+source bone_ws/install/force_position/local_setup.bash
+ros2 topic echo --full-length /force_position/attitude
+# 以下命令分别运行，或在其他终端运行：
+ros2 topic echo /force_position/position_feedback
+ros2 topic echo /force_position/relative_force
+ros2 topic echo /force_position/raw_force_feedback
+ros2 topic echo --full-length /research_force_position/diagnostics
+ros2 topic echo --full-length /force_position/uart_state
 ```
 
-### 4. 查阅已记录的硬件证据
+姿态诊断的 `base_relative_rpy_rad` 和 `platform_relative_rpy_rad` 按 Roll/Pitch/Yaw 排列，单位 rad，均相对捕获的参考姿态。控制诊断包括 `desired_m`、`actual_m`、`error_m`、`force_cmd_relative`、`force_actual_relative`、`force_error_relative`、`correction_m`、`position_command_m` 和 `shaped_command_m`。UART 状态提供实际反馈和故障码；日志 `position_acknowledged` 记录已发送步数目标及应答。
 
-通过[原始证据索引](./results/README.md)查找已有数据集与分析入口。[控制方案对比](./docs/j11/J11_FINAL_CONTROL_COMPARISON.md)与[HOME 附近跟踪总结](./agent_docs/reports/REAL_HARDWARE_PERFORMANCE_SUMMARY.md)给出相关指标定义与证据边界。
+日志保存在 `results/force_position/<时间戳>/`，启动时打印为 `LOG_DIR`。每次运行包含 `config.json`、`telemetry.jsonl`、`h30_base.log` 和 `h30_platform.log`。受力量保留 `relative_raw` 标识；主机接收时间不能解释为设备同步采样时间。
 
----
+### 正常退出与故障
 
-## 6. 核心安全红线与实机操作守则
+在运行终端按 Ctrl+C，等待指定运行时间结束，或发布：
 
-- **默认零运动**：所有节点与测试脚本默认启动于 Mock / FakeBus 模式。
-- **真机授权原则**：使用 `--real-hardware` 或 `hardware_mode:=active` 驱动物理串口前，必须确认运行参考、硬件急停可靠，并取得操作人员明确确认。主动姿态稳定使用 `OPERATING_HOME`，不使用 `STORAGE_PARK`。
-- **写指令零自动重试**：RS485 上的运动写指令严禁发生超时自动重试，通信异常时触发单次暂停（0x1A）并安全停机。
+```bash
+ros2 topic pub --once -w 1 /force_position/stop std_msgs/msg/Empty '{}'
+```
+
+正常退出时停止当前控制流，读取六轴实际位置，通过原位置 Servo 执行协调的五次平滑 HOME 轨迹。返回期间 UART 通信和反馈持续运行。最终 HOME 目标发出后，需连续两次状态查询确认六轴全部进入现有 ±5 steps 的 HOME 容差，再逐轴发送一次暂停命令（`0x1A=1`）并检查应答，最后关闭通信并退出。日志顺序为 `home_started → home_confirmed → pause_complete → uart_stopped`。
+
+通信故障、位置反馈无效或过期、驱动故障时跳过或中止 HOME，转入现有故障暂停路径。缺失暂停应答会报告失败，不视为成功停止。退出 HOME/暂停流程已通过 Mock 软件测试；这不等于真机返回精度或停止性能已验证。
+
+## 研究评价
+
+研究目标是判断实际受力变化能否改善原位置控制方案的三轴姿态稳定。对照实验包括静态保持、Roll/Pitch/Yaw 单轴扰动、两轴与三轴组合扰动以及连续基座扰动。通过实际记录的基座 IMU 曲线判断输入可比性，不默认手动扰动完全一致。
+
+逐轴报告末端姿态误差 RMS、Peak、P95，采用明确判据的恢复时间，以及基座扰动向末端的传递情况。结合六轴位置误差、相对受力、PID 需求、力误差、补偿量、最终命令、实际位置及饱和/保护事件解释响应。论文预期形成控制框图与模型、可比基座扰动下的 Base/Platform 曲线、相对受力及位置补偿曲线、定量对比，以及补偿机理、适用条件和性能边界分析。改善结论必须来自真实对比数据，不能因增加反馈环就预设有效。
+
+## 代码入口
+
+- [双 IMU 姿态处理与 IK](bone_ws/scripts/research/force_torque_control/imu_chain.py)。
+- [位置误差 PID 与动态映射](bone_ws/scripts/research/force_position_control/controller.py)。
+- [ROS 反馈配对及修正目标](bone_ws/scripts/research/force_position_control/ros_node.py)。
+- [独立运行程序与 UART 所有权](bone_ws/scripts/research/force_position_control/runtime.py)。
+- [位置传输及正常 HOME/暂停](bone_ws/scripts/research/force_position_control/uart_driver.py)。
+- [硬件运行与标定指南](docs/research/6PUS_FORCE_POSITION_HARDWARE.md)。
+
+原位置控制仓库保持独立。本文档不修改其算法或研究运行程序。仓库尚未确立统一许可证，各组件原有声明仍然适用。
