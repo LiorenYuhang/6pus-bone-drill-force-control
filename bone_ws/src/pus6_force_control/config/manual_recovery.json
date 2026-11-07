@@ -1,0 +1,24 @@
+{
+  "hardware_mode": "active",
+  "port": "/dev/ttyUSB0",
+  "baudrate": 921600,
+  "epoch": 1,
+  "control_mode": "force",
+  "maintenance_only": true,
+  "mode3_only": true,
+  "force_fault_recovery": "position_reanchor",
+  "dry_run": true,
+  "hardware_write_enabled": false,
+  "is_hardware_qualified": false,
+  "output_dir": "results/manual_recovery",
+  "manual_parameters": {
+    "control_strategy": "native_support",
+    "damping_n_s_m": 500.0,
+    "max_increment_n": 0.5,
+    "max_speed_m_s": 0.002,
+    "max_current_ma": 200,
+    "operator_timeout_s": 0.75,
+    "maximum_seconds": 120.0,
+    "max_rate_g_s": 500.0
+  }
+}

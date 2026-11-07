@@ -1,0 +1,30 @@
+# Software example only; force calibration and hardware PID gains are not established.
+frame_id: pus6_base
+pid:
+  kp: 1.0
+  ki: 0.0
+  kd: 0.0
+  output_min_n: -10.0
+  output_max_n: 10.0
+  integral_limit_n: 5.0
+  derivative_filter_tau_s: 0.05
+  reference_rate_n_s: 1.0
+  output_mode: reference_plus_pid
+compensation:
+  sensor_zero_g: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  direction: [1, 1, 1, 1, 1, 1]
+  newtons_per_g: [0.00980665, 0.00980665, 0.00980665, 0.00980665, 0.00980665, 0.00980665]
+  actuator_bias_n: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+drive:
+  # Same protection as the former +/-1500 g; no physical limit was increased.
+  min_force_n: [-14.709975, -14.709975, -14.709975, -14.709975, -14.709975, -14.709975]
+  max_force_n: [14.709975, 14.709975, 14.709975, 14.709975, 14.709975, 14.709975]
+  max_rate_g_s: [500.0, 500.0, 500.0, 500.0, 500.0, 500.0]
+  allow_negative_forces: true
+# Retained Torque position settings, only for optional position-reference use.
+# Never used as a force reference rate or as the force PID output.
+position_reference:
+  max_speed_m_s: 0.017
+  max_cycle_delta_steps: null
+  period_s: 0.02
+  baudrate: 921600

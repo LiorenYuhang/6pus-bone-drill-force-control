@@ -71,6 +71,10 @@ class FeedbackSample:
     feedback_age_ns: int
     timeout: bool
     error: str | None = None
+    force_g: int | None = None
+    force_adc: int | None = None
+    temperature_c: int | None = None
+    force_valid: bool = False
 
 
 @dataclass(frozen=True)
@@ -365,6 +369,7 @@ class J7ServoFeedbackScheduler:
         *,
         servo_cycle_id: int,
         servo_cycle_timestamp_ns: int,
+        per_axis_rx_done_ns: dict[int, int] | None = None,
     ) -> FeedbackCycleAudit:
         """Ingest 0x29 StatusFeedback responses received directly from 50Hz motion writes.
 
@@ -440,17 +445,22 @@ class J7ServoFeedbackScheduler:
                 age_ns = self._feedback_age_ns(motor_id, now_ns)
                 self._validate_status(motor_id, status)
                 self._initialized_axes.add(motor_id)
-                self._last_feedback_ns[motor_id] = now_ns
+                received_ns = (per_axis_rx_done_ns or {}).get(motor_id, now_ns)
+                self._last_feedback_ns[motor_id] = received_ns
                 self._consecutive_timeouts[motor_id] = 0
                 sample = FeedbackSample(
                     motor_id=motor_id,
-                    timestamp_ns=now_ns,
+                    timestamp_ns=received_ns,
                     position=status.current_position,
                     current_mA=status.current_mA,
                     fault=status.error_code,
                     mode=None,
                     feedback_age_ns=age_ns,
                     timeout=False,
+                    force_g=status.force_g,
+                    force_adc=status.force_adc,
+                    temperature_c=status.temperature,
+                    force_valid=self._force_is_valid(status),
                 )
             else:
                 timeout_count += 1
@@ -605,6 +615,10 @@ class J7ServoFeedbackScheduler:
                 mode=None,
                 feedback_age_ns=age_ns,
                 timeout=False,
+                force_g=status.force_g,
+                force_adc=status.force_adc,
+                temperature_c=status.temperature,
+                force_valid=self._force_is_valid(status),
             )
         except (TimeoutError, J7AdapterTimeout) as exc:
             self._timeout_count += 1
@@ -632,6 +646,13 @@ class J7ServoFeedbackScheduler:
         except Exception as exc:
             self._stop("feedback_bus_failure")
             raise FeedbackRxError(str(exc)) from exc
+
+    @staticmethod
+    def _force_is_valid(status) -> bool:
+        # Wire validity and device fault status; not physical force calibration.
+        return (type(status.force_g) is int and -32768 <= status.force_g <= 32767
+                and type(status.force_adc) is int and 0 <= status.force_adc <= 4095
+                and status.error_code == 0)
 
     def _validate_status(self, motor_id: int, status) -> None:
         if status.error_code != 0:

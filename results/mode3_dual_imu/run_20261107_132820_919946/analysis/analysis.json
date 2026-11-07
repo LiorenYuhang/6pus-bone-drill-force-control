@@ -1,0 +1,440 @@
+{
+  "source": "REAL_HARDWARE",
+  "run_dir": "/home/lyapunov/6pus_bone_drill_force_control/results/mode3_dual_imu/run_20261107_132820_919946",
+  "outcome": "fault",
+  "error": "ValueError: joint reference tracking error exceeds configured bound",
+  "fault_timestamp_ns": 187766186406723,
+  "hardware_write_count": 3612,
+  "analysis_hardware_write_count": 0,
+  "all_mode0_exit_confirmed": true,
+  "serial_closed": true,
+  "completed_active_samples": 548,
+  "workspace_result": {
+    "target_checks": 640,
+    "unreachable_targets": 0,
+    "full_target_motion_completed": false,
+    "stability_verdict": "NOT_EVALUATED_BY_RUNTIME"
+  },
+  "tracking_available": true,
+  "completed_control_samples": 599,
+  "analysis_status": "ACTIVE_SAMPLES_AVAILABLE",
+  "full_unscaled_target_completed": false,
+  "stability_verdict": "NOT_ESTABLISHED",
+  "overshoot_definition": "signed residual peaks about the fixed world attitude reference; not step-response percent overshoot",
+  "fault_stage": "pid_update",
+  "rejected_target_request": {
+    "ns": 187766174042672,
+    "phase": "stabilize",
+    "phase_elapsed_s": 10.954506988,
+    "requested_pose_m_rad": [
+      0.00017287923500047166,
+      -0.00016632713880236497,
+      0.13257007562037365,
+      -0.12017699006607918,
+      -0.08433492639977413,
+      0.019393685470608234
+    ],
+    "target_reachable": true,
+    "kinematic_reachable": true,
+    "saturated": false,
+    "ik_saturated": false,
+    "reason": "NONE",
+    "action": "direct_exact_ik",
+    "rotation_scale": 1.0,
+    "bounded_pose_m_rad": [
+      0.00017287923500047166,
+      -0.00016632713880236497,
+      0.13257007562037365,
+      -0.12017699006607918,
+      -0.08433492639977413,
+      0.019393685470608234
+    ],
+    "requested_positions_steps": [
+      842.5927110252632,
+      903.7801996049035,
+      1068.4001531060635,
+      1156.6874858944623,
+      1092.4571602973706,
+      931.2014983478125
+    ],
+    "bounded_positions_steps": [
+      842.5927110252632,
+      903.7801996049035,
+      1068.4001531060635,
+      1156.6874858944623,
+      1092.4571602973706,
+      931.2014983478125
+    ],
+    "lower_steps": [
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0
+    ],
+    "upper_steps": [
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0
+    ],
+    "mechanical_remaining_lower_steps": [
+      642.5927110252632,
+      703.7801996049035,
+      868.4001531060635,
+      956.6874858944623,
+      892.4571602973706,
+      731.2014983478125
+    ],
+    "mechanical_remaining_upper_steps": [
+      957.4072889747368,
+      896.2198003950965,
+      731.5998468939365,
+      643.3125141055377,
+      707.5428397026294,
+      868.7985016521875
+    ],
+    "target_remaining_lower_steps": [
+      642.5927110252632,
+      703.7801996049035,
+      868.4001531060635,
+      956.6874858944623,
+      892.4571602973706,
+      731.2014983478125
+    ],
+    "target_remaining_upper_steps": [
+      957.4072889747368,
+      896.2198003950965,
+      731.5998468939365,
+      643.3125141055377,
+      707.5428397026294,
+      868.7985016521875
+    ]
+  },
+  "fault_latest_feedback": {
+    "actual_positions_steps": [
+      943,
+      947,
+      1031,
+      1069,
+      1050,
+      968
+    ],
+    "feedback_rx_ns": [
+      187766171250388,
+      187766171250388,
+      187766171250388,
+      187766171250388,
+      187766173637514,
+      187766173637514
+    ],
+    "currents_ma": [
+      95,
+      134,
+      90,
+      109,
+      119,
+      87
+    ],
+    "force_2c_g": [
+      -240,
+      93,
+      166,
+      871,
+      -236,
+      -169
+    ],
+    "fault_codes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "protection_trigger": "joint reference tracking error exceeds configured bound",
+  "terminal_position_steps": [
+    936,
+    940,
+    1038,
+    1078,
+    1058,
+    961
+  ],
+  "terminal_remaining_lower_steps": [
+    736.0,
+    740.0,
+    838.0,
+    878.0,
+    858.0,
+    761.0
+  ],
+  "terminal_remaining_upper_steps": [
+    864.0,
+    860.0,
+    762.0,
+    722.0,
+    742.0,
+    839.0
+  ],
+  "terminal_minus_captured_steps": [
+    -58.000000000000114,
+    -55.0,
+    38.999999999999886,
+    75.99999999999989,
+    58.0,
+    -39.0
+  ],
+  "fault_attempted_target_force_g": null,
+  "protection_thresholds": {
+    "current_ma": 1500,
+    "tracking_error_m": 0.0025,
+    "mechanical_min_steps": [
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0
+    ],
+    "mechanical_max_steps": [
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0
+    ],
+    "actual_fault_min_steps": [
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0
+    ],
+    "actual_fault_max_steps": [
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0
+    ],
+    "target_min_steps": [
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0
+    ],
+    "target_max_steps": [
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0
+    ]
+  },
+  "active_elapsed_s": 10.939971176,
+  "base_min_deg": [
+    -0.03298021995052091,
+    -0.01931618057141609,
+    -0.8236243308480229
+  ],
+  "base_max_deg": [
+    5.972740658993726,
+    3.965277455039232,
+    0.02139166692878304
+  ],
+  "base_peak_abs_deg": [
+    5.972740658993726,
+    3.965277455039232,
+    0.8236243308480229
+  ],
+  "base_max_so3_deg": 7.238835331529316,
+  "platform_relative_peak_abs_deg": [
+    3.7561084100839963,
+    1.6985912091237447,
+    1.1056379036840953
+  ],
+  "world_error_max_abs_deg": [
+    3.7439296238099864,
+    1.6964053795949792,
+    1.0598995245390501
+  ],
+  "world_error_rms_deg": [
+    0.44440742126002386,
+    0.23933025865593657,
+    0.09177118334614753
+  ],
+  "world_error_so3_max_deg": 4.240867213169061,
+  "world_error_so3_rms_deg": 0.5130291208811193,
+  "transient_positive_peak_deg": [
+    0.023908190796300036,
+    0.016509855259977255,
+    0.667748735533693
+  ],
+  "transient_negative_peak_deg": [
+    -3.7439296238099864,
+    -1.6964053795949792,
+    -1.0598995245390501
+  ],
+  "transient_peak_time_s": [
+    10.939971176,
+    10.902105626,
+    10.939971176
+  ],
+  "actual_min_steps": [
+    943.0,
+    947.0,
+    998.0,
+    1002.0,
+    999.0,
+    968.0
+  ],
+  "actual_max_steps": [
+    994.0,
+    996.0,
+    1031.0,
+    1069.0,
+    1050.0,
+    1001.0
+  ],
+  "target_min_steps": [
+    852.8112635401144,
+    909.4562236616074,
+    998.466230747936,
+    1001.201192082232,
+    999.4852530483264,
+    936.1218297548953
+  ],
+  "target_max_steps": [
+    994.7972848797762,
+    995.5140684253802,
+    1063.3990308286375,
+    1146.0476344016604,
+    1086.6313135326768,
+    1000.5336427951863
+  ],
+  "actual_remaining_lower_steps": [
+    743.0,
+    747.0,
+    798.0,
+    802.0,
+    799.0,
+    768.0
+  ],
+  "actual_remaining_upper_steps": [
+    806.0,
+    804.0,
+    769.0,
+    731.0,
+    750.0,
+    799.0
+  ],
+  "target_remaining_lower_steps": [
+    652.8112635401144,
+    709.4562236616074,
+    798.466230747936,
+    801.201192082232,
+    799.4852530483264,
+    736.1218297548953
+  ],
+  "target_remaining_upper_steps": [
+    805.2027151202238,
+    804.4859315746198,
+    736.6009691713625,
+    653.9523655983396,
+    713.3686864673232,
+    799.4663572048137
+  ],
+  "force_readback_mismatch_frames": 0,
+  "cycle_work_max_ms": 13.96592,
+  "ik_saturated_recorded_frames": 0,
+  "rejected_fault_target": false,
+  "pid_clipped_frames": 17,
+  "max_current_ma": [
+    95,
+    134,
+    90,
+    109,
+    136,
+    87
+  ],
+  "fault_codes_seen": [
+    0
+  ],
+  "modes_seen": [
+    3
+  ],
+  "target_force_min_g": [
+    -630,
+    -315,
+    153,
+    856,
+    -260,
+    -539
+  ],
+  "target_force_max_g": [
+    -118,
+    122,
+    574,
+    1264,
+    172,
+    -102
+  ],
+  "feedback_force_min_g": [
+    -252,
+    41,
+    166,
+    840,
+    -272,
+    -174
+  ],
+  "feedback_force_max_g": [
+    -204,
+    124,
+    200,
+    901,
+    -236,
+    -131
+  ],
+  "tail_3s_world_error_rms_deg": [
+    0.8463031886281184,
+    0.4558564143954627,
+    0.1745174872378703
+  ],
+  "last_fk_pose_m_rad": [
+    -0.000716104838896203,
+    -0.0005611069061478983,
+    0.1326213753068081,
+    -0.052884281537352085,
+    -0.037455815889208106,
+    0.04940500057450106
+  ],
+  "captured_pose_m_rad": [
+    0.00017287923500047166,
+    -0.00016632713880236497,
+    0.13257007562037365,
+    -0.00266252893594653,
+    -0.00371561735487693,
+    -0.004831246901221797
+  ],
+  "fk_target_error_max_abs_deg": [
+    3.2953416662594104,
+    2.5067013559895313,
+    1.9922575867605454
+  ],
+  "fk_target_error_rms_deg": [
+    0.39841541692885024,
+    0.3088600736455037,
+    0.19512285401096405
+  ]
+}

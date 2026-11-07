@@ -1,0 +1,3 @@
+{"event": "startup_handshake_complete", "ns": 187753918159199, "child_ready_ns": 187753837627624, "bridge_ready_ns": 187753910323558, "servo_start_ns": 187753913081978}
+{"event": "bridge_joined", "ns": 187767051500004, "bridge_returncode": 0}
+{"event": "child_joined", "ns": 187767067172725, "child_returncode": 0}

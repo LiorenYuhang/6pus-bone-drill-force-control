@@ -110,6 +110,7 @@ class SixAxisStateSnapshot:
     forces_g_raw: list[int]
     temperatures_C: list[int]
     fault_codes: list[int]
+    forces_adc: list[int] = field(default_factory=list)
     timestamp_start_ns: int = 0
     timestamp_end_ns: int = 0
     per_axis_start_timestamps_ns: dict[int, int] = field(default_factory=dict)
@@ -150,6 +151,7 @@ class SixAxisCommandResult:
         positions_meters = [steps_to_meters(p) for p in positions_steps]
         currents_mA = [r.current_mA for r in self.responses]
         forces_g_raw = [r.force_g for r in self.responses]
+        forces_adc = [getattr(r, 'force_adc', 2048) for r in self.responses]
         temperatures_C = [r.temperature for r in self.responses]
         fault_codes = [r.error_code for r in self.responses]
         return SixAxisStateSnapshot(
@@ -163,6 +165,7 @@ class SixAxisCommandResult:
             forces_g_raw=forces_g_raw,
             temperatures_C=temperatures_C,
             fault_codes=fault_codes,
+            forces_adc=forces_adc,
             timestamp_start_ns=self.per_axis_write_timestamps_ns.get(1, 0),
             timestamp_end_ns=self.per_axis_write_completion_timestamps_ns.get(6, 0),
             per_axis_start_timestamps_ns=dict(self.per_axis_write_timestamps_ns),
@@ -336,7 +339,7 @@ class SixMotorController:
         """
         self._ensure_connected()
         t_start = time.time()
-        t_start_ns = time.perf_counter_ns()
+        t_start_ns = time.monotonic_ns()
         per_axis_ts: dict[int, float] = {}
         per_axis_start_ts_ns: dict[int, int] = {}
         per_axis_end_ts_ns: dict[int, int] = {}
@@ -346,9 +349,9 @@ class SixMotorController:
             for mid in MOTOR_IDS:
                 motor = self._motors[mid]
                 t_axis_start = time.time()
-                t_axis_start_ns = time.perf_counter_ns()
+                t_axis_start_ns = time.monotonic_ns()
                 status = motor.read_status()
-                t_axis_end_ns = time.perf_counter_ns()
+                t_axis_end_ns = time.monotonic_ns()
 
                 per_axis_ts[mid] = t_axis_start
                 per_axis_start_ts_ns[mid] = t_axis_start_ns
@@ -358,11 +361,12 @@ class SixMotorController:
                 states.append(status)
 
         t_end = time.time()
-        t_end_ns = time.perf_counter_ns()
+        t_end_ns = time.monotonic_ns()
         pos_steps = [s.current_position for s in states]
         pos_meters = [steps_to_meters(p) for p in pos_steps]
         currents = [s.current_mA for s in states]
         forces = [s.force_g for s in states]
+        forces_adc = [getattr(s, 'force_adc', 2048) for s in states]
         temps = [s.temperature for s in states]
         faults = [s.error_code for s in states]
 
@@ -382,6 +386,7 @@ class SixMotorController:
             forces_g_raw=forces,
             temperatures_C=temps,
             fault_codes=faults,
+            forces_adc=forces_adc,
         )
         self._last_snapshot = snapshot
         return snapshot

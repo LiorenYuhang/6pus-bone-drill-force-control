@@ -1,0 +1,434 @@
+{
+  "pid": 2786783,
+  "cycles": 599,
+  "fault": "ValueError: joint reference tracking error exceeds configured bound",
+  "closed": true,
+  "servo_start_ns": 187753913081978,
+  "force_shutdown_report": {
+    "reason": "ValueError: joint reference tracking error exceeds configured bound",
+    "axes": [
+      {
+        "motor_id": 1,
+        "final_mode": 0,
+        "anchor_steps": 936,
+        "anchor_confirmed": true,
+        "observation_confirmed": true,
+        "initial_mode": 3,
+        "position_raw_u16": 936,
+        "measured_position_steps": 936,
+        "endpoint_exit_target_selected": false,
+        "target_position_steps": 936,
+        "observations": [
+          {
+            "position_steps": 936,
+            "target_position_steps": 936,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 937,
+            "target_position_steps": 936,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 937,
+            "target_position_steps": 936,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          }
+        ]
+      },
+      {
+        "motor_id": 2,
+        "final_mode": 0,
+        "anchor_steps": 940,
+        "anchor_confirmed": true,
+        "observation_confirmed": true,
+        "initial_mode": 3,
+        "position_raw_u16": 940,
+        "measured_position_steps": 940,
+        "endpoint_exit_target_selected": false,
+        "target_position_steps": 940,
+        "observations": [
+          {
+            "position_steps": 940,
+            "target_position_steps": 940,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 940,
+            "target_position_steps": 940,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 940,
+            "target_position_steps": 940,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          }
+        ]
+      },
+      {
+        "motor_id": 3,
+        "final_mode": 0,
+        "anchor_steps": 1038,
+        "anchor_confirmed": true,
+        "observation_confirmed": true,
+        "initial_mode": 3,
+        "position_raw_u16": 1038,
+        "measured_position_steps": 1038,
+        "endpoint_exit_target_selected": false,
+        "target_position_steps": 1038,
+        "observations": [
+          {
+            "position_steps": 1038,
+            "target_position_steps": 1038,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 1038,
+            "target_position_steps": 1038,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 1038,
+            "target_position_steps": 1038,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          }
+        ]
+      },
+      {
+        "motor_id": 4,
+        "final_mode": 0,
+        "anchor_steps": 1078,
+        "anchor_confirmed": true,
+        "observation_confirmed": true,
+        "initial_mode": 3,
+        "position_raw_u16": 1078,
+        "measured_position_steps": 1078,
+        "endpoint_exit_target_selected": false,
+        "target_position_steps": 1078,
+        "observations": [
+          {
+            "position_steps": 1078,
+            "target_position_steps": 1078,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 1078,
+            "target_position_steps": 1078,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 1078,
+            "target_position_steps": 1078,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          }
+        ]
+      },
+      {
+        "motor_id": 5,
+        "final_mode": 0,
+        "anchor_steps": 1058,
+        "anchor_confirmed": true,
+        "observation_confirmed": true,
+        "initial_mode": 3,
+        "position_raw_u16": 1058,
+        "measured_position_steps": 1058,
+        "endpoint_exit_target_selected": false,
+        "target_position_steps": 1058,
+        "observations": [
+          {
+            "position_steps": 1058,
+            "target_position_steps": 1058,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 1058,
+            "target_position_steps": 1058,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 1058,
+            "target_position_steps": 1058,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          }
+        ]
+      },
+      {
+        "motor_id": 6,
+        "final_mode": 0,
+        "anchor_steps": 961,
+        "anchor_confirmed": true,
+        "observation_confirmed": true,
+        "initial_mode": 3,
+        "position_raw_u16": 961,
+        "measured_position_steps": 961,
+        "endpoint_exit_target_selected": false,
+        "target_position_steps": 961,
+        "observations": [
+          {
+            "position_steps": 961,
+            "target_position_steps": 961,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 961,
+            "target_position_steps": 961,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 961,
+            "target_position_steps": 961,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          }
+        ]
+      }
+    ],
+    "pause_requested": true,
+    "pause_acknowledged": true,
+    "position_hold_confirmed": true,
+    "independent_stop_required": false,
+    "hardware_stop_confirmed": true,
+    "pause_axes": [
+      {
+        "motor_id": 1,
+        "acknowledged": true,
+        "error": null
+      },
+      {
+        "motor_id": 2,
+        "acknowledged": true,
+        "error": null
+      },
+      {
+        "motor_id": 3,
+        "acknowledged": true,
+        "error": null
+      },
+      {
+        "motor_id": 4,
+        "acknowledged": true,
+        "error": null
+      },
+      {
+        "motor_id": 5,
+        "acknowledged": true,
+        "error": null
+      },
+      {
+        "motor_id": 6,
+        "acknowledged": true,
+        "error": null
+      }
+    ],
+    "status": "MODE0_ANCHORED_OBSERVED",
+    "source": "REAL_HARDWARE"
+  },
+  "handover_report": {
+    "status": "mode3_active",
+    "failed_axis": null,
+    "recovery_complete": false,
+    "axes": [
+      {
+        "motor_id": 1,
+        "initial_mode": 0,
+        "switch_attempted": true,
+        "confirmed_mode3": true,
+        "recovery_attempted": false,
+        "final_mode": 3,
+        "anchor_position": null,
+        "error": null,
+        "hold_force_g": -222,
+        "target_force_g_readback": -222
+      },
+      {
+        "motor_id": 2,
+        "initial_mode": 0,
+        "switch_attempted": true,
+        "confirmed_mode3": true,
+        "recovery_attempted": false,
+        "final_mode": 3,
+        "anchor_position": null,
+        "error": null,
+        "hold_force_g": 93,
+        "target_force_g_readback": 93
+      },
+      {
+        "motor_id": 3,
+        "initial_mode": 0,
+        "switch_attempted": true,
+        "confirmed_mode3": true,
+        "recovery_attempted": false,
+        "final_mode": 3,
+        "anchor_position": null,
+        "error": null,
+        "hold_force_g": 166,
+        "target_force_g_readback": 166
+      },
+      {
+        "motor_id": 4,
+        "initial_mode": 0,
+        "switch_attempted": true,
+        "confirmed_mode3": true,
+        "recovery_attempted": false,
+        "final_mode": 3,
+        "anchor_position": null,
+        "error": null,
+        "hold_force_g": 856,
+        "target_force_g_readback": 856
+      },
+      {
+        "motor_id": 5,
+        "initial_mode": 0,
+        "switch_attempted": true,
+        "confirmed_mode3": true,
+        "recovery_attempted": false,
+        "final_mode": 3,
+        "anchor_position": null,
+        "error": null,
+        "hold_force_g": -236,
+        "target_force_g_readback": -236
+      },
+      {
+        "motor_id": 6,
+        "initial_mode": 0,
+        "switch_attempted": true,
+        "confirmed_mode3": true,
+        "recovery_attempted": false,
+        "final_mode": 3,
+        "anchor_position": null,
+        "error": null,
+        "hold_force_g": -131,
+        "target_force_g_readback": -131
+      }
+    ]
+  },
+  "force_handover_snapshot": {
+    "source": "HARDWARE",
+    "axes": [
+      {
+        "motor_id": 1,
+        "mode": 0,
+        "force_raw_u16": 65314,
+        "force_g_raw": -222,
+        "force_rx_ns": 187753794741735,
+        "position_raw_u16": 994,
+        "position_steps": 994,
+        "position_rx_ns": 187753797126755
+      },
+      {
+        "motor_id": 2,
+        "mode": 0,
+        "force_raw_u16": 93,
+        "force_g_raw": 93,
+        "force_rx_ns": 187753802140260,
+        "position_raw_u16": 996,
+        "position_steps": 996,
+        "position_rx_ns": 187753804749301
+      },
+      {
+        "motor_id": 3,
+        "mode": 0,
+        "force_raw_u16": 166,
+        "force_g_raw": 166,
+        "force_rx_ns": 187753810082451,
+        "position_raw_u16": 999,
+        "position_steps": 999,
+        "position_rx_ns": 187753812848965
+      },
+      {
+        "motor_id": 4,
+        "mode": 0,
+        "force_raw_u16": 856,
+        "force_g_raw": 856,
+        "force_rx_ns": 187753818187730,
+        "position_raw_u16": 1002,
+        "position_steps": 1002,
+        "position_rx_ns": 187753821048151
+      },
+      {
+        "motor_id": 5,
+        "mode": 0,
+        "force_raw_u16": 65300,
+        "force_g_raw": -236,
+        "force_rx_ns": 187753826191146,
+        "position_raw_u16": 999,
+        "position_steps": 999,
+        "position_rx_ns": 187753829019251
+      },
+      {
+        "motor_id": 6,
+        "mode": 0,
+        "force_raw_u16": 65405,
+        "force_g_raw": -131,
+        "force_rx_ns": 187753834799905,
+        "position_raw_u16": 1001,
+        "position_steps": 1001,
+        "position_rx_ns": 187753837575685
+      }
+    ],
+    "baseline_g": [
+      -222,
+      93,
+      166,
+      856,
+      -236,
+      -131
+    ],
+    "holding_forces_g": [
+      -222,
+      93,
+      166,
+      856,
+      -236,
+      -131
+    ],
+    "relative_forces_g": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "software_baseline_subtracted": true
+  },
+  "hardware_tare": null,
+  "motion_stop_ns": 187766186437314,
+  "hardware_write_count": null,
+  "pause_success": true
+}

@@ -1,0 +1,14 @@
+{
+  "command_channel": {
+    "parent_so_sndbuf": 16384,
+    "parent_so_rcvbuf": 16384,
+    "child_so_sndbuf": 16384,
+    "child_so_rcvbuf": 16384
+  },
+  "feedback_channel": {
+    "child_so_sndbuf": 16384,
+    "child_so_rcvbuf": 16384,
+    "bridge_so_sndbuf": 16384,
+    "bridge_so_rcvbuf": 16384
+  }
+}

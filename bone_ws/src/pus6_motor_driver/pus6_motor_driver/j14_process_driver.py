@@ -15,9 +15,13 @@ from builtin_interfaces.msg import Time
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
 from std_srvs.srv import Trigger
+from rclpy.qos import qos_profile_sensor_data
+
+AXIAL_FORCE_COMMAND_QOS = qos_profile_sensor_data
 
 from .motor_driver_node import Pus6MotorDriverNode, ServoTelemetrySnapshot
 from .j14_process_uart import ProcessClient, append_rows
+from .j14_feedback_bridge import populate_force_feedback
 from .safety import DriverError, steps_to_meters, HardwareMode
 
 try:
@@ -26,8 +30,42 @@ except ImportError:
     TimedJointCommand = None  # type: ignore
     TimedJointFeedback = None  # type: ignore
 
+try:
+    from pus6_research_msgs.msg import AxialForceCommand
+except ImportError:
+    AxialForceCommand = None  # type: ignore
+
 
 class J14ProcessMotorDriverNode(Pus6MotorDriverNode):
+    def _native_force_child_options(self):
+        """Shared by the formal production entry and the compatibility parent."""
+        from .force_units import NOMINAL_N_PER_G, DEFAULT_FORCE_LIMIT_N
+        defaults=dict(direction=[1.]*6,newtons_per_g=[NOMINAL_N_PER_G]*6,
+            min_force_n=[-DEFAULT_FORCE_LIMIT_N]*6,max_force_n=[DEFAULT_FORCE_LIMIT_N]*6,
+            max_rate_g_s=[500.]*6,allow_negative_forces=True,control_mode='position',mode3_only=False,
+            force_dry_run=True,force_hardware_write_enabled=False,force_is_hardware_qualified=False)
+        for name,value in defaults.items():
+            if not self.has_parameter(name):self.declare_parameter(name,value)
+        mode=self.get_parameter('control_mode').value
+        if mode not in ('position','force'):raise ValueError('control_mode must be position or force')
+        self.native_force_control=mode=='force'
+        options={k:self.get_parameter(k).value for k in defaults if not k.startswith('force_') and k!='control_mode'}
+        if self.native_force_control:
+            options.update(control_mode='force',dry_run=self.get_parameter('force_dry_run').value,
+                hardware_write_enabled=self.get_parameter('force_hardware_write_enabled').value,
+                is_hardware_qualified=self.get_parameter('force_is_hardware_qualified').value,
+                hold_anchor_on_timeout=False,max_force_handover_displacement_steps=6,force_mode_check_period_s=1.)
+            if options['dry_run']:
+                raise ValueError('Force owner needs an explicit handover; use FakeBus offline or authorized live entry')
+            if self.hardware_mode.value=='active' and not (options['hardware_write_enabled'] and options['is_hardware_qualified']):
+                raise ValueError('live Mode 3 owner requires independent write authorization and hardware qualification before opening UART')
+        return options
+
+    def _subscribe_native_force_commands(self):
+        self._axial_forces_sub=(self.create_subscription(AxialForceCommand,'/pus6/command_axial_forces',
+            self._handle_command_axial_forces,AXIAL_FORCE_COMMAND_QOS,callback_group=self.sub_cb_group)
+            if AxialForceCommand is not None and self.native_force_control else None)
+
     def _init_j7_servo_backend(self, p_port, p_baudrate, p_timeout):
         if self.servo_scheduler_mode != 'dedicated_thread' or self.telemetry_publish_mode != 'async_latest':
             raise ValueError('A1.9/A1.11 requires dedicated_thread / async_latest')
@@ -54,6 +92,7 @@ class J14ProcessMotorDriverNode(Pus6MotorDriverNode):
             max_servo_duration_s=float(os.environ.get('PUS6_J14_PROCESS_WINDOW_S', '60')),
             feedback_bridge=self.use_feedback_bridge,
         )
+        config.update(self._native_force_child_options())
         self._process_client = ProcessClient(config)
         self.j7_adapter = self._process_client  # endpoint only, no serial handle
         self.j7_writer = self._process_client
@@ -69,7 +108,8 @@ class J14ProcessMotorDriverNode(Pus6MotorDriverNode):
 
         ready = self._process_client.ready
         # Send the same measured static startup reference, with no new motion target.
-        self._process_client.update(ready['positions'], seq=0)
+        if not self.native_force_control:
+            self._process_client.update(ready['positions'], seq=0)
         for i, mid in enumerate(range(1, 7)):
             self._latest_positions_steps[mid] = ready['positions'][i]
             self._latest_currents[mid] = ready['currents'][i]
@@ -80,8 +120,32 @@ class J14ProcessMotorDriverNode(Pus6MotorDriverNode):
             f"ROS-free={ready['modules_without_ros']}; pipeline_diag={self._instrumentation_enabled}; "
             f"bridge={self.use_feedback_bridge}"
         )
+        self._subscribe_native_force_commands()
+
+    def _handle_command_axial_forces(self, msg: AxialForceCommand) -> None:
+        if not self.native_force_control:
+            return  # force topic must never switch an ordinary position session
+        if self._j7_fault_latched:
+            return
+        forces = getattr(msg, "force_n", None)
+        if forces is None or len(forces) != 6:
+            self.get_logger().error("AxialForceCommand must have 6 force values")
+            return
+        import math
+        if any(not isinstance(v, (int, float)) or not math.isfinite(v) for v in forces):
+            self.get_logger().error("AxialForceCommand forces must be finite numbers")
+            return
+        now_ns = time.monotonic_ns()
+        stamp_ns = getattr(msg, "sample_monotonic_ns", 0)
+        if not isinstance(stamp_ns, int) or stamp_ns <= 0 or stamp_ns > now_ns:
+            stamp_ns = now_ns
+        client = getattr(self, '_process_client', None)
+        if client is not None:
+            client.update_force(forces, publish_ns=stamp_ns)
 
     def _enqueue_latest_target(self, targets_steps):
+        if getattr(self, "native_force_control", False):
+            return  # no ordinary position targets in a native-force session
         if self._j7_fault_latched:
             return
         super()._enqueue_latest_target(targets_steps)
@@ -145,7 +209,8 @@ class J14ProcessMotorDriverNode(Pus6MotorDriverNode):
             self._latest_currents[mid] = row['currents'][i]
             self._latest_faults[mid] = row['faults'][i]
             self._latest_rx_done_ns[mid] = row['rx_ns'][i]
-        self._last_commanded_steps = list(row['targets'])
+        if row.get('control_mode') != 3:
+            self._last_commanded_steps = list(row['targets'])
         self._uart_cycle_seq = row['cycle_seq'] + 1
         stamp = self.get_clock().now().to_msg()
         snap = ServoTelemetrySnapshot(
@@ -178,6 +243,10 @@ class J14ProcessMotorDriverNode(Pus6MotorDriverNode):
             t_entry_ns=row['cycle_start_ns'],
         )
         snap.epoch = row['epoch']
+        snap.force_fields = {key: row[key] for key in (
+            'forces_g_raw', 'force_adc_raw', 'temperatures_c', 'force_valid', 'feedback_source',
+            'force_mode_confirmed', 'force_hold_valid', 'force_hold_g', 'force_hold_reference_monotonic_ns'
+        ) if key in row}
         snap.command_seq = row.get('command_seq', -1)
         snap.t_child_ready_ns = row.get('feedback_ready_ns', 0)
         snap.t_parent_recv_ns = row.get('parent_receive_ns', 0)
@@ -275,6 +344,7 @@ class J14ProcessMotorDriverNode(Pus6MotorDriverNode):
         if self.timed_feedback_pub is not None:
             tf_msg = TimedJointFeedback()
             tf_msg.header.stamp = stamp_msg
+            tf_msg.header.frame_id = 'pus6_base'
             tf_msg.snapshot_start_monotonic_ns = snap.cycle_start_ns
             tf_msg.snapshot_end_monotonic_ns = snap.cycle_end_ns
             tf_msg.per_axis_rx_done_monotonic_ns = list(snap.rx_done_ns)
@@ -283,10 +353,11 @@ class J14ProcessMotorDriverNode(Pus6MotorDriverNode):
             tf_msg.currents_ma = list(snap.currents_mA)
             tf_msg.fault_codes = list(snap.fault_codes)
             tf_msg.uart_cycle_sequence = snap.uart_cycle_seq
+            populate_force_feedback(tf_msg, getattr(snap, 'force_fields', {}))
 
         # 3. TimedJointCommand message
         tc_msg = None
-        if self.timed_command_pub is not None and self.hardware_mode != HardwareMode.READ_ONLY:
+        if self.timed_command_pub is not None and self.hardware_mode != HardwareMode.READ_ONLY and not self.native_force_control:
             tc_msg = TimedJointCommand()
             tc_msg.header.stamp = stamp_msg
             tc_msg.transaction_start_monotonic_ns = snap.cycle_start_ns
@@ -375,7 +446,7 @@ class J14ProcessMotorDriverNode(Pus6MotorDriverNode):
         else:
             client.stop('service_pause')
             response.success = False
-            response.message = 'Child pause requested; ACK not synchronously confirmed'
+            response.message = 'Child terminal stop requested; await per-axis Mode0 anchoring and observations; service is not stop confirmation'
         return response
 
     def _handle_configure_motors(self, request, response):

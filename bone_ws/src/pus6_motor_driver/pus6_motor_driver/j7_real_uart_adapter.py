@@ -32,7 +32,7 @@ try:
         unpack_status_response,
         validate_response,
     )
-    from .safety import MOTOR_IDS, PAUSE_ADDR, TARGET_POSITION_ADDR
+    from .safety import MOTOR_IDS, PAUSE_ADDR, TARGET_POSITION_ADDR, TARGET_FORCE_ADDR
 except ImportError:  # pragma: no cover - direct module execution fallback.
     from protocol import (  # type: ignore
         CMD_WR_REGISTER,
@@ -45,7 +45,7 @@ except ImportError:  # pragma: no cover - direct module execution fallback.
         unpack_status_response,
         validate_response,
     )
-    from safety import MOTOR_IDS, PAUSE_ADDR, TARGET_POSITION_ADDR  # type: ignore
+    from safety import MOTOR_IDS, PAUSE_ADDR, TARGET_POSITION_ADDR, TARGET_FORCE_ADDR  # type: ignore
 
 
 class J7SerialLike(Protocol):
@@ -221,7 +221,7 @@ class J7RxOwner:
             if (
                 frame.motor_id in MOTOR_IDS
                 and frame.command == CMD_WR_REGISTER
-                and frame.register_addr == TARGET_POSITION_ADDR
+                and frame.register_addr in (TARGET_POSITION_ADDR, TARGET_FORCE_ADDR)
             ):
                 self._is_motion_write_status(frame)
             self._frames.append(frame)
@@ -239,7 +239,7 @@ class J7RxOwner:
         if (
             frame.motor_id not in MOTOR_IDS
             or frame.command != CMD_WR_REGISTER
-            or frame.register_addr != TARGET_POSITION_ADDR
+            or frame.register_addr not in (TARGET_POSITION_ADDR, TARGET_FORCE_ADDR)
         ):
             return False
         try:
@@ -733,6 +733,28 @@ class J7UartAdapter:
     def audit_snapshot(self) -> tuple[J7RequestAudit, ...]:
         return tuple(self._request_audit)
 
+    def wait_for_response(self, *, expected_id: int, expected_command: int,
+                          timeout_s: float = 1.0) -> bytes:
+        """Wait for an asynchronous frame through the existing RX owner; no TX/drain.
+
+        In particular, preserve a completion already queued behind a write ACK.
+        The caller must hold its operation lock across write and completion wait.
+        """
+        if timeout_s <= 0:
+            raise ValueError('positive asynchronous response timeout required')
+        with self.uart_lock:
+            deadline = self._clock_ns() + int(timeout_s * 1e9)
+            while self._clock_ns() <= deadline:
+                self._ingest_available_locked()
+                frame = self.rx_owner.take_matching(expected_id=expected_id,
+                                                     expected_command=expected_command)
+                if frame is not None:
+                    validate_response(frame.raw, expected_id=expected_id,
+                                      expected_command=expected_command)
+                    return frame.raw
+                self._sleep_fn(max(.0001, self.min_frame_interval_s))
+        raise J7AdapterTimeout(f'ID{expected_id} asynchronous 0x{expected_command:02X} timeout')
+
     def request_recovery_status(self, motor_id, *, refresh_epoch_ns, hard_deadline_ns, observer):
         """One read-only 0x30 transaction in the paused recovery epoch.
 
@@ -926,7 +948,8 @@ class J7StopAdapter:
         self._last_audit = StopAudit(
             reason=str(reason),
             records=tuple(records),
-            success=all(record.response_received for record in records),
+            success=all(record.response_received and record.status is not None
+                        and record.status.error_code == 0 for record in records),
             callback_count=self._callback_count,
         )
         if self.audit_observer is not None:

@@ -1,0 +1,171 @@
+# SOFTWARE CONFIGURATION. Hardware research interrupted; not a hardware PASS.
+# Normal force slew 500g/s, explicit braking slew 5000g/s; absolute N caps unchanged.
+# Live IPC driver rate ceiling must not re-limit these planned braking commands.
+force_active_stabilization:
+  ros__parameters:
+    dry_run: true
+    hardware_write_enabled: false
+    is_hardware_qualified: false
+    use_fixed_lag: true
+    fixed_lag_delay_ms: 30.0
+    rate_hz: 50.0
+    imu_timeout_s: 0.1
+    max_displacement_steps: 0
+    attitude_kp:
+    - 0.05
+    - 0.05
+    - 0.025
+    attitude_ki:
+    - 0.0
+    - 0.0
+    - 0.0
+    attitude_kd:
+    - 0.0
+    - 0.0015
+    - 0.0015
+    attitude_residual_limit_rad:
+    - 0.008726646259971648
+    - 0.008726646259971648
+    - 0.008726646259971648
+    attitude_integral_limit_rad_s:
+    - 0.03490658503988659
+    - 0.03490658503988659
+    - 0.06981317007977318
+    attitude_min_dt_s: 0.001
+    attitude_max_dt_s: 0.1
+    attitude_derivative_enabled: true
+    attitude_derivative_lpf_cutoff_hz: 5.0
+    pose_kp:
+    - 10.0
+    - 10.0
+    - 10.0
+    - 0.2
+    - 0.2
+    - 0.2
+    pose_ki:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    pose_kd:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    pose_integral_limit_n_nm:
+    - 1.0
+    - 1.0
+    - 1.0
+    - 0.1
+    - 0.1
+    - 0.1
+    pose_derivative_filter_tau_s: 0.05
+    force_limit_n:
+    - 1.0
+    - 1.0
+    - 1.0
+    moment_limit_nm:
+    - 0.1
+    - 0.1
+    - 0.1
+    wrench_rate:
+    - 1.0
+    - 1.0
+    - 1.0
+    - 0.1
+    - 0.1
+    - 0.1
+    min_force_n:
+    - -14.709975
+    - -14.709975
+    - -14.709975
+    - -14.709975
+    - -14.709975
+    - -14.709975
+    max_force_n:
+    - 14.709975
+    - 14.709975
+    - 14.709975
+    - 14.709975
+    - 14.709975
+    - 14.709975
+    max_rate_g_s:
+    - 500.0
+    - 500.0
+    - 500.0
+    - 500.0
+    - 500.0
+    - 500.0
+    execution_backend: joint_position_force
+    fault_stop_policy: external_mode3_hold
+    joint_kp_n_m:
+    - 8000.0
+    - 8000.0
+    - 8000.0
+    - 8000.0
+    - 8000.0
+    - 8000.0
+    joint_ki_n_m_s:
+    - 6000.0
+    - 6000.0
+    - 6000.0
+    - 6000.0
+    - 6000.0
+    - 6000.0
+    joint_kd_n_s_m:
+    - 5000.0
+    - 5000.0
+    - 5000.0
+    - 5000.0
+    - 5000.0
+    - 5000.0
+    joint_integral_limit_n:
+    - 2.5
+    - 2.5
+    - 2.5
+    - 2.5
+    - 2.5
+    - 2.5
+    joint_increment_limit_n:
+    - 4.0
+    - 4.0
+    - 4.0
+    - 4.0
+    - 4.0
+    - 4.0
+    joint_min_position_m:
+    - 0.03
+    - 0.03
+    - 0.03
+    - 0.03
+    - 0.03
+    - 0.03
+    joint_max_position_m:
+    - 0.07
+    - 0.07
+    - 0.07
+    - 0.07
+    - 0.07
+    - 0.07
+    joint_max_tracking_error_m: 0.0025
+    joint_max_reference_speed_m_s: 0.0001
+    joint_derivative_filter_tau_s: 0.04
+    joint_position_deadband_m: 2.5e-05
+    joint_use_latest_feedback: true
+    joint_active_braking: true
+    joint_velocity_window_s: 0.08
+    joint_velocity_noise_span_m: 3.75e-05
+    joint_prediction_horizon_s: 0.02
+    joint_brake_horizon_cap_s: 0.1
+    joint_brake_rate_g_s:
+    - 5000.0
+    - 5000.0
+    - 5000.0
+    - 5000.0
+    - 5000.0
+    - 5000.0
+    joint_execution_only: false

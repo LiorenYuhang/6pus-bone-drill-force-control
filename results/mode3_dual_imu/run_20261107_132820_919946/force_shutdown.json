@@ -1,0 +1,254 @@
+{
+  "reason": "ValueError: joint reference tracking error exceeds configured bound",
+  "axes": [
+    {
+      "motor_id": 1,
+      "final_mode": 0,
+      "anchor_steps": 936,
+      "anchor_confirmed": true,
+      "observation_confirmed": true,
+      "initial_mode": 3,
+      "position_raw_u16": 936,
+      "measured_position_steps": 936,
+      "endpoint_exit_target_selected": false,
+      "target_position_steps": 936,
+      "observations": [
+        {
+          "position_steps": 936,
+          "target_position_steps": 936,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        },
+        {
+          "position_steps": 937,
+          "target_position_steps": 936,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        },
+        {
+          "position_steps": 937,
+          "target_position_steps": 936,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        }
+      ]
+    },
+    {
+      "motor_id": 2,
+      "final_mode": 0,
+      "anchor_steps": 940,
+      "anchor_confirmed": true,
+      "observation_confirmed": true,
+      "initial_mode": 3,
+      "position_raw_u16": 940,
+      "measured_position_steps": 940,
+      "endpoint_exit_target_selected": false,
+      "target_position_steps": 940,
+      "observations": [
+        {
+          "position_steps": 940,
+          "target_position_steps": 940,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        },
+        {
+          "position_steps": 940,
+          "target_position_steps": 940,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        },
+        {
+          "position_steps": 940,
+          "target_position_steps": 940,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        }
+      ]
+    },
+    {
+      "motor_id": 3,
+      "final_mode": 0,
+      "anchor_steps": 1038,
+      "anchor_confirmed": true,
+      "observation_confirmed": true,
+      "initial_mode": 3,
+      "position_raw_u16": 1038,
+      "measured_position_steps": 1038,
+      "endpoint_exit_target_selected": false,
+      "target_position_steps": 1038,
+      "observations": [
+        {
+          "position_steps": 1038,
+          "target_position_steps": 1038,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        },
+        {
+          "position_steps": 1038,
+          "target_position_steps": 1038,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        },
+        {
+          "position_steps": 1038,
+          "target_position_steps": 1038,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        }
+      ]
+    },
+    {
+      "motor_id": 4,
+      "final_mode": 0,
+      "anchor_steps": 1078,
+      "anchor_confirmed": true,
+      "observation_confirmed": true,
+      "initial_mode": 3,
+      "position_raw_u16": 1078,
+      "measured_position_steps": 1078,
+      "endpoint_exit_target_selected": false,
+      "target_position_steps": 1078,
+      "observations": [
+        {
+          "position_steps": 1078,
+          "target_position_steps": 1078,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        },
+        {
+          "position_steps": 1078,
+          "target_position_steps": 1078,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        },
+        {
+          "position_steps": 1078,
+          "target_position_steps": 1078,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        }
+      ]
+    },
+    {
+      "motor_id": 5,
+      "final_mode": 0,
+      "anchor_steps": 1058,
+      "anchor_confirmed": true,
+      "observation_confirmed": true,
+      "initial_mode": 3,
+      "position_raw_u16": 1058,
+      "measured_position_steps": 1058,
+      "endpoint_exit_target_selected": false,
+      "target_position_steps": 1058,
+      "observations": [
+        {
+          "position_steps": 1058,
+          "target_position_steps": 1058,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        },
+        {
+          "position_steps": 1058,
+          "target_position_steps": 1058,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        },
+        {
+          "position_steps": 1058,
+          "target_position_steps": 1058,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        }
+      ]
+    },
+    {
+      "motor_id": 6,
+      "final_mode": 0,
+      "anchor_steps": 961,
+      "anchor_confirmed": true,
+      "observation_confirmed": true,
+      "initial_mode": 3,
+      "position_raw_u16": 961,
+      "measured_position_steps": 961,
+      "endpoint_exit_target_selected": false,
+      "target_position_steps": 961,
+      "observations": [
+        {
+          "position_steps": 961,
+          "target_position_steps": 961,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        },
+        {
+          "position_steps": 961,
+          "target_position_steps": 961,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        },
+        {
+          "position_steps": 961,
+          "target_position_steps": 961,
+          "current_ma": 0,
+          "fault_code": 0,
+          "mode": 0
+        }
+      ]
+    }
+  ],
+  "pause_requested": true,
+  "pause_acknowledged": true,
+  "position_hold_confirmed": true,
+  "independent_stop_required": false,
+  "hardware_stop_confirmed": true,
+  "pause_axes": [
+    {
+      "motor_id": 1,
+      "acknowledged": true,
+      "error": null
+    },
+    {
+      "motor_id": 2,
+      "acknowledged": true,
+      "error": null
+    },
+    {
+      "motor_id": 3,
+      "acknowledged": true,
+      "error": null
+    },
+    {
+      "motor_id": 4,
+      "acknowledged": true,
+      "error": null
+    },
+    {
+      "motor_id": 5,
+      "acknowledged": true,
+      "error": null
+    },
+    {
+      "motor_id": 6,
+      "acknowledged": true,
+      "error": null
+    }
+  ],
+  "status": "MODE0_ANCHORED_OBSERVED",
+  "source": "REAL_HARDWARE"
+}

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Mapping, Sequence
 import sys
+import math
 from pathlib import Path
 
 try:
@@ -26,12 +27,24 @@ MOTOR_IDS: tuple[int, ...] = (1, 2, 3, 4, 5, 6)
 NUM_MOTORS: int = 6
 
 CONTROL_MODE_ADDR: int = 0x25
+TARGET_FORCE_ADDR: int = 0x27
 TARGET_SPEED_ADDR: int = 0x28
 TARGET_POSITION_ADDR: int = 0x29
 ACTUAL_POSITION_ADDR: int = 0x2A
+ACTUAL_FORCE_ADDR: int = 0x2C
+FORCE_ADC_ADDR: int = 0x2D
 LOWER_LIMIT_ADDR: int = 0x24
 UPPER_LIMIT_ADDR: int = 0x23
 PAUSE_ADDR: int = 0x1A
+
+MODE_POSITION: int = 0
+MODE_SERVO: int = 1
+MODE_SPEED: int = 2
+MODE_FORCE: int = 3
+
+# Native registers retain signed g; nominal SI conversion lives in force_units.
+from .force_units import (NOMINAL_N_PER_G, NOMINAL_G_PER_N, g_to_n, n_to_g,
+                          encode_signed_i16_to_u16, decode_u16_to_signed_i16)
 
 SPEED_MODE: int = 2
 DEFAULT_SPEED: int = 50
@@ -252,7 +265,6 @@ def relative_to_raw_steps(rel_steps: int | Sequence[int]) -> int | list[int]:
     return [int(round(r)) + OPERATING_HOME_RAW_STEP for r in rel_steps]
 
 
-
 from enum import Enum
 
 
@@ -385,4 +397,279 @@ def validate_status_feedback(
         raise SafetyViolation(
             f"Motor ID{motor_id} actual position {status.current_position} "
             f"outside feedback range [{FEEDBACK_LOWER_LIMIT}, {FEEDBACK_UPPER_LIMIT}]"
+        )
+
+
+def validate_force_vector(
+    forces_n: Sequence[float],
+    limits_n: tuple[float, float] | None = None,
+) -> list[float]:
+    """Validate that forces_n is a 6-element sequence of finite floats within limits."""
+    import math
+    if len(forces_n) != NUM_MOTORS:
+        raise TargetValidationError(f"Expected 6 force values, got {len(forces_n)}")
+    validated = []
+    for mid, val in zip(MOTOR_IDS, forces_n):
+        if not math.isfinite(val):
+            raise TargetValidationError(f"Motor ID{mid} force {val} is not finite")
+        if limits_n is not None:
+            lower, upper = limits_n
+            if not (lower <= val <= upper):
+                raise TargetValidationError(
+                    f"Motor ID{mid} force {val} N outside safe limit [{lower}, {upper}] N"
+                )
+        validated.append(float(val))
+    return validated
+
+
+import fcntl
+import json
+import os
+import time
+from datetime import datetime, timezone
+
+DEFAULT_UART_LOCKFILE: str = "/tmp/pus6_uart_owner.lock"
+
+
+class SerialPortLock:
+    """Kernel-enforced OS-level mutual exclusion lock for serial port access.
+
+    Provides two complementary layers of mutual exclusion:
+    1. Direct file lock (fcntl.flock) on the open serial port file descriptor.
+    2. Global advisory lockfile (/tmp/pus6_uart_owner.lock) recording PID, owner name,
+       and acquisition timestamp, also guarded with flock.
+
+    Guarantees:
+    - Independent processes (e.g. read_only_diagnostic vs normal Child) cannot open or
+      access the serial port concurrently.
+    - If a process crashes or is killed, kernel automatically releases all locks.
+    - Does NOT rely on fragile process name searching (e.g. ps / pgrep).
+    """
+
+    def __init__(
+        self,
+        serial_fd: int | None = None,
+        port: str = "/dev/ttyUSB0",
+        owner: str = "unknown",
+        lockfile_path: str = DEFAULT_UART_LOCKFILE,
+    ) -> None:
+        self.serial_fd = serial_fd
+        self.port = port
+        self.owner = owner
+        self.lockfile_path = lockfile_path
+        self._lockfile_fd: int | None = None
+        self._serial_locked = False
+        self._lockfile_locked = False
+
+    def acquire(self) -> None:
+        # Layer 1: Acquire lock on global lockfile and record owner metadata
+        try:
+            self._lockfile_fd = os.open(
+                self.lockfile_path,
+                os.O_RDWR | os.O_CREAT,
+                0o666,
+            )
+            fcntl.flock(self._lockfile_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            self._lockfile_locked = True
+
+            # Write owner record
+            info = {
+                "pid": os.getpid(),
+                "owner": self.owner,
+                "port": self.port,
+                "timestamp_ns": time.time_ns(),
+                "timestamp_iso": datetime.now(timezone.utc).isoformat(),
+            }
+            os.ftruncate(self._lockfile_fd, 0)
+            os.lseek(self._lockfile_fd, 0, os.SEEK_SET)
+            os.write(self._lockfile_fd, json.dumps(info).encode("utf-8"))
+        except (BlockingIOError, OSError) as exc:
+            existing_owner = "unknown"
+            existing_pid = "unknown"
+            if self._lockfile_fd is not None:
+                try:
+                    os.lseek(self._lockfile_fd, 0, os.SEEK_SET)
+                    content = os.read(self._lockfile_fd, 1024).decode("utf-8", errors="ignore")
+                    data = json.loads(content)
+                    existing_owner = data.get("owner", "unknown")
+                    existing_pid = data.get("pid", "unknown")
+                except Exception:
+                    pass
+                try:
+                    os.close(self._lockfile_fd)
+                except Exception:
+                    pass
+                self._lockfile_fd = None
+            raise BlockingIOError(
+                f"UART port {self.port} is already owned by PID {existing_pid} ({existing_owner}). "
+                f"Exclusive single-owner constraint prevents concurrent access."
+            ) from exc
+
+        # Layer 2: Acquire direct lock on the serial device file descriptor (if open)
+        if self.serial_fd is not None:
+            try:
+                fcntl.flock(self.serial_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                self._serial_locked = True
+            except (BlockingIOError, OSError) as exc:
+                self.release()
+                raise BlockingIOError(
+                    f"Direct lock on serial device fd {self.serial_fd} ({self.port}) failed: already locked by another process"
+                ) from exc
+
+    def release(self) -> None:
+        if self._serial_locked and self.serial_fd is not None:
+            try:
+                fcntl.flock(self.serial_fd, fcntl.LOCK_UN)
+            except OSError:
+                pass
+            self._serial_locked = False
+
+        if self._lockfile_locked and self._lockfile_fd is not None:
+            try:
+                os.ftruncate(self._lockfile_fd, 0)
+                fcntl.flock(self._lockfile_fd, fcntl.LOCK_UN)
+            except OSError:
+                pass
+            self._lockfile_locked = False
+
+        if self._lockfile_fd is not None:
+            try:
+                os.close(self._lockfile_fd)
+            except OSError:
+                pass
+            self._lockfile_fd = None
+
+    def __enter__(self) -> "SerialPortLock":
+        self.acquire()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.release()
+
+
+class ForceHandoverState(str, Enum):
+    """Lifecycle state machine for 6-axis Mode 3 force control handover."""
+    MODE0_POSITION = "mode0_position"
+    PREPARING_FORCE_HANDOVER = "preparing_force_handover"
+    SWITCHING_MODE3 = "switching_mode3"
+    MODE3_FORCE_ACTIVE = "mode3_force_active"
+    EXITING_TO_POSITION = "exiting_to_position"
+    FAULT_LATCHED = "fault_latched"
+    SAFE_STOP = "safe_stop"
+
+
+# Historical Stage 3B-1 measured load in g (ID1..ID6), not a live handover baseline.
+# ID1: 3754 g, ID2: -687 g, ID3: -6176 g
+# ID4: 793 g, ID5: -671 g, ID6: -6994 g
+STAGE3B1_STATIC_BASELINE_G: tuple[int, ...] = (3754, -687, -6176, 793, -671, -6994)
+
+
+def validate_initial_handover_forces(
+    initial_forces_g: Sequence[int] | None = None,
+    *,
+    static_baseline_g: Sequence[int] | None = None,
+    handover_tolerance_g: float = 1000.0,
+) -> list[int]:
+    """Validate 6-axis initial force vector before transitioning into Mode 3.
+
+    All force quantities are in motor native units: g (gram).
+    Manufacturer sales confirmed: signed int16 [-32768, 32767], negative forces are valid.
+
+    Invariants:
+    1. Must have exactly 6 integer elements.
+    2. Must be within 16-bit signed range [-32768, 32767].
+    3. If static_baseline_g is provided and has significant static load (> 100 g on any axis),
+       a zero vector [0, 0, 0, 0, 0, 0] is strictly forbidden (would drop the platform).
+    4. If static_baseline_g is provided, initial_forces_g must not deviate from baseline
+       by more than handover_tolerance_g per axis (unless tolerance is None or <= 0).
+    """
+    if initial_forces_g is None:
+        raise TargetValidationError("initial_forces_g required")
+
+    if len(initial_forces_g) != NUM_MOTORS:
+        raise TargetValidationError(f"Expected {NUM_MOTORS} initial forces, got {len(initial_forces_g)}")
+
+    validated: list[int] = []
+    for mid, val in zip(MOTOR_IDS, initial_forces_g):
+        if not isinstance(val, int) or isinstance(val, bool):
+            raise TargetValidationError(f"Initial force for ID{mid} must be integer, got {type(val).__name__}")
+        if not (-32768 <= val <= 32767):
+            raise TargetValidationError(f"Initial force {val} for ID{mid} outside signed 16-bit range")
+        validated.append(int(val))
+
+    if static_baseline_g is not None and len(static_baseline_g) == NUM_MOTORS:
+        has_static_load = any(abs(b) > 100 for b in static_baseline_g)
+        if has_static_load and all(v == 0 for v in validated):
+            raise SafetyViolation(
+                f"Initial force handover rejected: static baseline is non-zero "
+                f"{list(static_baseline_g)} g, but commanded initial force is all zero! "
+                f"Zero-force handover would collapse the loaded platform."
+            )
+        if handover_tolerance_g is not None and handover_tolerance_g > 0:
+            for mid, v, b in zip(MOTOR_IDS, validated, static_baseline_g):
+                dev = abs(v - b)
+                if dev > handover_tolerance_g:
+                    raise SafetyViolation(
+                        f"Initial force handover for ID{mid} ({v} g) deviates from static baseline "
+                        f"({b} g) by {dev:.1f} g > allowed tolerance {handover_tolerance_g:.1f} g"
+                    )
+
+    return validated
+
+
+@dataclass
+class ForceBaselineManager:
+    """Explicitly partitions and manages force domain baselines and components.
+
+    Unit: g (gram). Manufacturer sales confirmed native force unit is g.
+    - raw_sensor_g: 0x2C register raw reading directly from the motor built-in force sensor.
+    - static_assembly_load_g: Measured static equilibrium forces under gravity and mechanical assembly constraint.
+    - sensor_zero_g: Intrinsic sensor zero tare (unmounted/unloaded zero bias).
+    - gravity_support_comp_g: Theoretical/model-based gravity and support compensation force component.
+    - controller_desired_force_n: Active task-space / interaction force commanded by upstream controller in Newtons.
+    """
+    raw_sensor_g: tuple[int, ...] = (0, 0, 0, 0, 0, 0)
+    static_assembly_load_g: tuple[int, ...] = STAGE3B1_STATIC_BASELINE_G
+    sensor_zero_g: tuple[int, ...] = (0, 0, 0, 0, 0, 0)
+    gravity_support_comp_g: tuple[int, ...] = (0, 0, 0, 0, 0, 0)
+    controller_desired_force_n: tuple[float, ...] = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    software_baseline_g: tuple[int, ...] | None = None
+
+
+    def capture_initial_state(self, raw_forces_g: Sequence[int]) -> tuple[int, ...]:
+        """Current signed load becomes the relative reference, never a sensor error."""
+        values = tuple(validate_initial_handover_forces(raw_forces_g))
+        self.raw_sensor_g = values
+        self.static_assembly_load_g = values
+        self.software_baseline_g = values
+        return values
+
+    def relative_forces_g(self, raw_forces_g: Sequence[int]) -> tuple[int, ...]:
+        if self.software_baseline_g is None:
+            raise SafetyViolation("Current force baseline has not been captured")
+        raw = validate_initial_handover_forces(raw_forces_g)
+        return tuple(value - base for value, base in zip(raw, self.software_baseline_g))
+
+
+    def command_from_delta_g(self, delta_forces_g: Sequence[float]) -> tuple[int, ...]:
+        """F_command = F_hold + delta, in explicitly raw actuator g units."""
+        if self.software_baseline_g is None:
+            raise SafetyViolation("Current force baseline has not been captured")
+        if len(delta_forces_g) != NUM_MOTORS or not all(math.isfinite(v) for v in delta_forces_g):
+            raise TargetValidationError("six finite force increments in g required")
+        return tuple(validate_initial_handover_forces([
+            int(round(base + delta)) for base, delta in zip(self.software_baseline_g, delta_forces_g)
+        ]))
+
+
+    def validate_initial_forces(
+        self,
+        initial_forces_g: Sequence[int] | None = None,
+        *,
+        handover_tolerance_g: float = 1000.0,
+        ) -> list[int]:
+        return validate_initial_handover_forces(
+            initial_forces_g,
+            static_baseline_g=self.static_assembly_load_g,
+            handover_tolerance_g=handover_tolerance_g,
         )

@@ -11,6 +11,7 @@ from collections import deque
 from dataclasses import dataclass, field
 from enum import Enum
 import threading
+import math
 from typing import Sequence
 
 try:
@@ -36,6 +37,12 @@ class SyncConfigurationResult:
     per_axis_left_stamps_ns: list[int] = field(default_factory=list)
     per_axis_right_stamps_ns: list[int] = field(default_factory=list)
     per_axis_interp_weights: list[float] = field(default_factory=list)
+    forces_g_raw: list[float] = field(default_factory=list)
+    force_valid: list[bool] = field(default_factory=list)
+    fault_codes: list[int] = field(default_factory=list)
+    sources: list[int] = field(default_factory=list)
+    per_axis_force_adc_left: list[int] = field(default_factory=list)
+    per_axis_force_adc_right: list[int] = field(default_factory=list)
 
 
 class FixedLagJointSynchronizer:
@@ -44,8 +51,9 @@ class FixedLagJointSynchronizer:
     def __init__(self, max_history_size: int = 500) -> None:
         self._lock = threading.RLock()
         self.max_history_size = max_history_size
-        # Per-axis deques storing tuples: (timestamp_ns, position_meters, raw_steps)
-        self._buffers: list[deque[tuple[int, float, float]]] = [
+        # Per-axis samples: (host_ns, position_m, steps, force_g, valid, ADC, fault, source).
+        # Position and force share one bracket and interpolation weight.
+        self._buffers: list[deque[tuple]] = [
             deque(maxlen=max_history_size) for _ in range(6)
         ]
         self._total_pushed_frames: int = 0
@@ -61,13 +69,21 @@ class FixedLagJointSynchronizer:
         positions = list(msg.positions_meters)
         raw_steps = list(msg.raw_steps)
 
-        self.push_raw_snapshot(rx_stamps, positions, raw_steps)
+        self.push_raw_snapshot(
+            rx_stamps, positions, raw_steps,
+            forces_g_raw=getattr(msg, 'forces_g_raw', None),
+            force_valid=getattr(msg, 'force_valid', None),
+            force_adc_raw=getattr(msg, 'force_adc_raw', None),
+            fault_codes=getattr(msg, 'fault_codes', None),
+            source=getattr(msg, 'source', 0),
+        )
 
     def push_raw_snapshot(
         self,
         per_axis_timestamps_ns: Sequence[int],
         positions_meters: Sequence[float],
         raw_steps: Sequence[float],
+        *, forces_g_raw=None, force_valid=None, force_adc_raw=None, fault_codes=None, source=0,
     ) -> None:
         """Push raw 6-axis snapshot directly into per-axis history buffers.
 
@@ -78,6 +94,15 @@ class FixedLagJointSynchronizer:
         """
         if len(per_axis_timestamps_ns) != 6 or len(positions_meters) != 6 or len(raw_steps) != 6:
             raise ValueError("All inputs must have length 6")
+
+        force = list(forces_g_raw) if forces_g_raw is not None else [0.0] * 6
+        valid = list(force_valid) if force_valid is not None else [False] * 6
+        adc = list(force_adc_raw) if force_adc_raw is not None else [0] * 6
+        faults = list(fault_codes) if fault_codes is not None else [0] * 6
+        if any(len(x) != 6 for x in (force, valid, adc, faults)):
+            raise ValueError("Force metadata must have length 6")
+        if not all(math.isfinite(float(x)) for x in positions_meters):
+            raise ValueError("positions must be finite")
 
         with self._lock:
             for i in range(6):
@@ -92,7 +117,10 @@ class FixedLagJointSynchronizer:
                         # Ignore duplicate or non-monotonic sample
                         continue
 
-                self._buffers[i].append((t_ns, pos_m, step_val))
+                f = float(force[i])
+                ok = (bool(valid[i]) and source in (1, 2) and faults[i] == 0
+                      and math.isfinite(f) and -32768 <= f <= 32767 and 0 <= adc[i] <= 4095)
+                self._buffers[i].append((t_ns, pos_m, step_val, f, ok, adc[i], faults[i], source))
                 self._last_pushed_stamps_ns[i] = t_ns
 
             self._total_pushed_frames += 1
@@ -145,6 +173,7 @@ class FixedLagJointSynchronizer:
             left_stamps: list[int] = []
             right_stamps: list[int] = []
             weights: list[float] = []
+            forces, valid, faults, sources, adc_left, adc_right = [], [], [], [], [], []
 
             # Perform linear interpolation for each axis
             for i in range(6):
@@ -165,7 +194,7 @@ class FixedLagJointSynchronizer:
 
                 if right_idx <= 0:
                     # Exactly at the oldest sample
-                    t_right, p_right, s_right = buf[0]
+                    t_right, p_right, s_right = buf[0][:3]
                     interp_positions.append(p_right)
                     interp_steps.append(s_right)
                     left_stamps.append(t_right)
@@ -173,8 +202,8 @@ class FixedLagJointSynchronizer:
                     weights.append(0.0)
                 else:
                     left_idx = right_idx - 1
-                    t_left, p_left, s_left = buf[left_idx]
-                    t_right, p_right, s_right = buf[right_idx]
+                    t_left, p_left, s_left = buf[left_idx][:3]
+                    t_right, p_right, s_right = buf[right_idx][:3]
 
                     dt = t_right - t_left
                     if dt <= 0:
@@ -193,6 +222,19 @@ class FixedLagJointSynchronizer:
                     right_stamps.append(t_right)
                     weights.append(alpha)
 
+                # Use exactly the same endpoints/alpha as position; no latest-force fallback.
+                right = buf[max(0, right_idx)]
+                left = buf[max(0, right_idx - 1)]
+                alpha = weights[-1]
+                if left_stamps[-1] == right_stamps[-1] or alpha == 1.0:
+                    left = right
+                forces.append(left[3] + alpha * (right[3] - left[3]))
+                valid.append(left[4] and right[4] and left[7] == right[7])
+                faults.append(int(left[6]) | int(right[6]))
+                sources.append(right[7] if left[7] == right[7] else 0)
+                adc_left.append(left[5])
+                adc_right.append(right[5])
+
             return SyncConfigurationResult(
                 query_timestamp_ns=query_timestamp_ns,
                 positions_meters=interp_positions,
@@ -201,6 +243,8 @@ class FixedLagJointSynchronizer:
                 per_axis_left_stamps_ns=left_stamps,
                 per_axis_right_stamps_ns=right_stamps,
                 per_axis_interp_weights=weights,
+                forces_g_raw=forces, force_valid=valid, fault_codes=faults, sources=sources,
+                per_axis_force_adc_left=adc_left, per_axis_force_adc_right=adc_right,
             )
 
     def clear(self) -> None:

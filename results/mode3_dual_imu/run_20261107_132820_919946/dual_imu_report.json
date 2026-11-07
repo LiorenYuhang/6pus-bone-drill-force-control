@@ -1,0 +1,633 @@
+{
+  "control_cycles": 599,
+  "error": "ValueError: joint reference tracking error exceeds configured bound",
+  "outcome": "fault",
+  "all_mode3_confirmed": true,
+  "all_mode0_exit_confirmed": true,
+  "serial_closed": true,
+  "hold_forces_g": [
+    -222,
+    93,
+    166,
+    856,
+    -236,
+    -131
+  ],
+  "pid": {
+    "joint_kp_n_m": [
+      8000.0,
+      8000.0,
+      8000.0,
+      8000.0,
+      8000.0,
+      8000.0
+    ],
+    "joint_ki_n_m_s": [
+      6000.0,
+      6000.0,
+      6000.0,
+      6000.0,
+      6000.0,
+      6000.0
+    ],
+    "joint_kd_n_s_m": [
+      1000.0,
+      1000.0,
+      1000.0,
+      1000.0,
+      1000.0,
+      1000.0
+    ],
+    "joint_integral_limit_n": [
+      2.5,
+      2.5,
+      2.5,
+      2.5,
+      2.5,
+      2.5
+    ],
+    "joint_increment_limit_n": [
+      4.0,
+      4.0,
+      4.0,
+      4.0,
+      4.0,
+      4.0
+    ],
+    "joint_min_position_m": [
+      0.030000000000000002,
+      0.030000000000000002,
+      0.030000000000000002,
+      0.030000000000000002,
+      0.030000000000000002,
+      0.030000000000000002
+    ],
+    "joint_max_position_m": [
+      0.07,
+      0.07,
+      0.07,
+      0.07,
+      0.07,
+      0.07
+    ],
+    "joint_max_reference_speed_m_s": null,
+    "joint_derivative_filter_tau_s": 0.04,
+    "joint_position_deadband_m": 2.5e-05,
+    "joint_use_latest_feedback": true,
+    "joint_active_braking": true,
+    "joint_continuous_velocity": true,
+    "joint_integrate_while_moving": true,
+    "joint_integral_from_measured_error": true,
+    "joint_velocity_window_s": 0.08,
+    "joint_velocity_noise_span_m": 3.75e-05,
+    "joint_prediction_horizon_s": 0.02,
+    "joint_brake_horizon_cap_s": 0.1,
+    "joint_brake_rate_g_s": [
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0
+    ],
+    "joint_max_tracking_error_m": 0.0025
+  },
+  "force_recovery": {
+    "status": "skipped_urgent_fault",
+    "cycles": 0,
+    "rate_g_s": [
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0
+    ],
+    "motion_stop_confirmed": false,
+    "destination": "captured_holding_bias_not_zero_force"
+  },
+  "terminal_recovery": {
+    "reason": "ValueError: joint reference tracking error exceeds configured bound",
+    "axes": [
+      {
+        "motor_id": 1,
+        "final_mode": 0,
+        "anchor_steps": 936,
+        "anchor_confirmed": true,
+        "observation_confirmed": true,
+        "initial_mode": 3,
+        "position_raw_u16": 936,
+        "measured_position_steps": 936,
+        "endpoint_exit_target_selected": false,
+        "target_position_steps": 936,
+        "observations": [
+          {
+            "position_steps": 936,
+            "target_position_steps": 936,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 937,
+            "target_position_steps": 936,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 937,
+            "target_position_steps": 936,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          }
+        ]
+      },
+      {
+        "motor_id": 2,
+        "final_mode": 0,
+        "anchor_steps": 940,
+        "anchor_confirmed": true,
+        "observation_confirmed": true,
+        "initial_mode": 3,
+        "position_raw_u16": 940,
+        "measured_position_steps": 940,
+        "endpoint_exit_target_selected": false,
+        "target_position_steps": 940,
+        "observations": [
+          {
+            "position_steps": 940,
+            "target_position_steps": 940,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 940,
+            "target_position_steps": 940,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 940,
+            "target_position_steps": 940,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          }
+        ]
+      },
+      {
+        "motor_id": 3,
+        "final_mode": 0,
+        "anchor_steps": 1038,
+        "anchor_confirmed": true,
+        "observation_confirmed": true,
+        "initial_mode": 3,
+        "position_raw_u16": 1038,
+        "measured_position_steps": 1038,
+        "endpoint_exit_target_selected": false,
+        "target_position_steps": 1038,
+        "observations": [
+          {
+            "position_steps": 1038,
+            "target_position_steps": 1038,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 1038,
+            "target_position_steps": 1038,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 1038,
+            "target_position_steps": 1038,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          }
+        ]
+      },
+      {
+        "motor_id": 4,
+        "final_mode": 0,
+        "anchor_steps": 1078,
+        "anchor_confirmed": true,
+        "observation_confirmed": true,
+        "initial_mode": 3,
+        "position_raw_u16": 1078,
+        "measured_position_steps": 1078,
+        "endpoint_exit_target_selected": false,
+        "target_position_steps": 1078,
+        "observations": [
+          {
+            "position_steps": 1078,
+            "target_position_steps": 1078,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 1078,
+            "target_position_steps": 1078,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 1078,
+            "target_position_steps": 1078,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          }
+        ]
+      },
+      {
+        "motor_id": 5,
+        "final_mode": 0,
+        "anchor_steps": 1058,
+        "anchor_confirmed": true,
+        "observation_confirmed": true,
+        "initial_mode": 3,
+        "position_raw_u16": 1058,
+        "measured_position_steps": 1058,
+        "endpoint_exit_target_selected": false,
+        "target_position_steps": 1058,
+        "observations": [
+          {
+            "position_steps": 1058,
+            "target_position_steps": 1058,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 1058,
+            "target_position_steps": 1058,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 1058,
+            "target_position_steps": 1058,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          }
+        ]
+      },
+      {
+        "motor_id": 6,
+        "final_mode": 0,
+        "anchor_steps": 961,
+        "anchor_confirmed": true,
+        "observation_confirmed": true,
+        "initial_mode": 3,
+        "position_raw_u16": 961,
+        "measured_position_steps": 961,
+        "endpoint_exit_target_selected": false,
+        "target_position_steps": 961,
+        "observations": [
+          {
+            "position_steps": 961,
+            "target_position_steps": 961,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 961,
+            "target_position_steps": 961,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          },
+          {
+            "position_steps": 961,
+            "target_position_steps": 961,
+            "current_ma": 0,
+            "fault_code": 0,
+            "mode": 0
+          }
+        ]
+      }
+    ],
+    "pause_requested": true,
+    "pause_acknowledged": true,
+    "position_hold_confirmed": true,
+    "independent_stop_required": false,
+    "hardware_stop_confirmed": true,
+    "pause_axes": [
+      {
+        "motor_id": 1,
+        "acknowledged": true,
+        "error": null
+      },
+      {
+        "motor_id": 2,
+        "acknowledged": true,
+        "error": null
+      },
+      {
+        "motor_id": 3,
+        "acknowledged": true,
+        "error": null
+      },
+      {
+        "motor_id": 4,
+        "acknowledged": true,
+        "error": null
+      },
+      {
+        "motor_id": 5,
+        "acknowledged": true,
+        "error": null
+      },
+      {
+        "motor_id": 6,
+        "acknowledged": true,
+        "error": null
+      }
+    ],
+    "status": "MODE0_ANCHORED_OBSERVED",
+    "source": "REAL_HARDWARE"
+  },
+  "recording": {
+    "dropped": 0,
+    "error": null,
+    "closed": true
+  },
+  "hardware_write_count": 3612,
+  "source": "REAL_HARDWARE",
+  "bridge_recording": {
+    "dropped": 0,
+    "error": null,
+    "closed": true
+  },
+  "recording_complete": true,
+  "fault_timestamp_ns": 187766186406723,
+  "architecture": "j14_three_process_joint_pid",
+  "stages": [
+    {
+      "phase": "initial_hold",
+      "elapsed_s": 1.012659271
+    }
+  ],
+  "plan": {
+    "trajectory": "dual_imu_so3_ladrc_attitude",
+    "initial_pose_m_rad": [
+      0.00017287923500047166,
+      -0.00016632713880236497,
+      0.13257007562037365,
+      -0.00266252893594653,
+      -0.00371561735487693,
+      -0.004831246901221797
+    ],
+    "initial_steps": [
+      994.0000000000001,
+      995.0,
+      999.0000000000001,
+      1002.0000000000001,
+      1000.0,
+      1000.0
+    ],
+    "axes": [
+      "roll",
+      "pitch",
+      "yaw"
+    ],
+    "phase_schedule": [
+      [
+        "initial_hold",
+        1.0
+      ],
+      [
+        "stabilize",
+        600.0
+      ],
+      [
+        "final_hold",
+        null
+      ]
+    ],
+    "settings": {
+      "rise_m": 0.01,
+      "move_seconds": 100.0,
+      "hold_seconds": 3.0,
+      "settle_timeout_s": 20.0,
+      "settle_seconds": 1.0,
+      "tolerance_steps": 2.0,
+      "z_tolerance_m": 0.0001,
+      "velocity_tolerance_m_s": 5e-05,
+      "tracking_error_m": 0.0025,
+      "envelope_margin_steps": 100.0,
+      "max_current_ma": 1500
+    },
+    "mechanical_min_steps": [
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0
+    ],
+    "mechanical_max_steps": [
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0
+    ],
+    "envelope_min_steps": [
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0
+    ],
+    "envelope_max_steps": [
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0
+    ],
+    "target_min_steps": [
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0
+    ],
+    "target_max_steps": [
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0
+    ],
+    "shared_current_limit_ma": 1500,
+    "pid_overrides": {
+      "joint_kd_n_s_m": [
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0
+      ],
+      "joint_continuous_velocity": true,
+      "joint_integrate_while_moving": true,
+      "joint_integral_from_measured_error": true,
+      "joint_velocity_window_s": 0.08,
+      "joint_derivative_filter_tau_s": 0.04
+    },
+    "actual_stop_reserve_steps": 0.0,
+    "target_overshoot_margin_steps": 0.0,
+    "legacy_initial_envelope_margin_ignored": true,
+    "attitude_parameters": {
+      "ladrc_b0_roll": 20.0,
+      "ladrc_omega_c_roll": 0.8,
+      "ladrc_omega_o_roll": 2.5,
+      "ladrc_max_residual_roll_deg": 0.5,
+      "ladrc_b0_pitch": 10.0,
+      "ladrc_omega_c_pitch": 1.0,
+      "ladrc_omega_o_pitch": 4.0,
+      "ladrc_max_residual_pitch_deg": 0.5,
+      "ladrc_b0_yaw": 6.0,
+      "ladrc_omega_c_yaw": 0.25,
+      "ladrc_omega_o_yaw": 1.2,
+      "ladrc_max_residual_yaw_deg": 0.5,
+      "kp_roll": 0.05,
+      "kp_pitch": 0.05,
+      "kp_yaw": 0.025,
+      "ki_roll": 0.0,
+      "ki_pitch": 0.0,
+      "ki_yaw": 0.0,
+      "kd_roll": 0.0,
+      "kd_pitch": 0.0015,
+      "kd_yaw": 0.0015,
+      "derivative_enabled": true,
+      "derivative_lpf_cutoff_hz": 5.0,
+      "max_residual_roll_deg": 0.5,
+      "max_residual_pitch_deg": 0.5,
+      "max_residual_yaw_deg": 0.5,
+      "max_integral_roll_deg_s": 2.0,
+      "max_integral_pitch_deg_s": 2.0,
+      "max_integral_yaw_deg_s": 4.0,
+      "control_rate_hz": 50.0,
+      "min_dt_s": 0.001,
+      "max_dt_s": 0.1,
+      "max_platform_imu_age_s": 0.1,
+      "max_base_imu_age_s": 0.1
+    },
+    "imu_reference": {
+      "pose_m_rad": [
+        0.00017287923500047166,
+        -0.00016632713880236497,
+        0.13257007562037365,
+        -0.00266252893594653,
+        -0.00371561735487693,
+        -0.004831246901221797
+      ],
+      "sample": {
+        "sample_ns": 187753917452972,
+        "now_ns": 187753928352249,
+        "time_basis": "host_monotonic_orientation_receipt",
+        "base_q_xyzw": [
+          0.03553853180874419,
+          -0.008225639899291688,
+          -0.9206742047716645,
+          0.3886236743601568
+        ],
+        "base_timing": {
+          "latest_rx_ns": 187753925364953,
+          "latest_header_ns": 1794029302340811513,
+          "bracket_rx_ns": [
+            187753916360085,
+            187753925364953
+          ],
+          "bracket_header_ns": [
+            1794029302336818264,
+            1794029302340811513
+          ],
+          "interpolation_alpha": 0.12136624323643612,
+          "latest_age_s": 0.0029872960000000004
+        },
+        "platform_q_xyzw": [
+          0.012759007805134028,
+          0.0012320007536582114,
+          -0.6080953719933363,
+          0.7937604855712193
+        ],
+        "platform_timing": {
+          "latest_rx_ns": 187753917452972,
+          "latest_header_ns": 1794029302337951091,
+          "bracket_rx_ns": [
+            187753913556818,
+            187753917452972
+          ],
+          "bracket_header_ns": [
+            1794029302333959955,
+            1794029302337951091
+          ],
+          "interpolation_alpha": 1.0,
+          "latest_age_s": 0.010899277
+        }
+      }
+    },
+    "initial_hold_policy": "fixed_1s_after_confirmed_mode3_and_valid_imu",
+    "pid_phase_handover": "carry_integral_and_velocity_state_without_reset",
+    "imu_source": "ROS_H30_DUAL_IMU",
+    "prior_input_semantics": "previous dispatched angular residual; not measured force or achieved pose",
+    "position_reference_mode": "direct_latest_bounded_ik",
+    "joint_max_reference_speed_m_s": null,
+    "normal_force_max_rate_g_s": null,
+    "exceptional_recovery_rate_g_s": [
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0
+    ],
+    "normal_pid_slew_delay_compensation": false,
+    "target_constraint": "exact IK in absolute target workspace; unreachable request faults before force write; no scaling",
+    "translation_reference": "captured actual FK XYZ, held constant",
+    "final_hold_reference": "last dispatched target attitude"
+  },
+  "workspace_result": {
+    "target_checks": 640,
+    "unreachable_targets": 0,
+    "full_target_motion_completed": false,
+    "stability_verdict": "NOT_EVALUATED_BY_RUNTIME"
+  },
+  "parent_error": "RuntimeError: ValueError: joint reference tracking error exceeds configured bound",
+  "child_returncode": 0,
+  "bridge_returncode": 0,
+  "force_policy": {
+    "normal_max_rate_g_s": null,
+    "exceptional_recovery_rate_g_s": [
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0
+    ],
+    "pid_slew_delay_compensation": false
+  }
+}

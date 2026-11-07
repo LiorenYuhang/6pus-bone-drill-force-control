@@ -13,11 +13,12 @@ try:
         parse_frame,
     )
     from .safety import (
-        ACTUAL_POSITION_ADDR,
+    ACTUAL_POSITION_ADDR,
         CONTROL_MODE_ADDR,
         LOWER_LIMIT_ADDR,
         MOTOR_IDS,
         PAUSE_ADDR,
+        TARGET_FORCE_ADDR,
         TARGET_POSITION_ADDR,
         TARGET_SPEED_ADDR,
         UPPER_LIMIT_ADDR,
@@ -36,6 +37,7 @@ except ImportError:
         LOWER_LIMIT_ADDR,
         MOTOR_IDS,
         PAUSE_ADDR,
+        TARGET_FORCE_ADDR,
         TARGET_POSITION_ADDR,
         TARGET_SPEED_ADDR,
         UPPER_LIMIT_ADDR,
@@ -52,8 +54,11 @@ class FakeBus:
         self.write_audit: list[dict] = []
         self.closed = False
         self.fail_on_id: int | None = None
+        self.fail_mode_readback_on_axis: int | None = None
         self.positions = {mid: 50 for mid in MOTOR_IDS}
         self.targets = {mid: 50 for mid in MOTOR_IDS}
+        self.target_forces = {mid: 0 for mid in MOTOR_IDS}
+        self.actual_forces = {mid: 0 for mid in MOTOR_IDS}
         self.currents = {mid: 0 for mid in MOTOR_IDS}
         self.faults = {mid: 0 for mid in MOTOR_IDS}
         self.limits = {mid: (0, 1800) for mid in MOTOR_IDS}
@@ -117,13 +122,20 @@ class FakeBus:
             elif reg == UPPER_LIMIT_ADDR:
                 val = self.limits[mid][1]
             elif reg == CONTROL_MODE_ADDR:
-                val = self.modes[mid]
+                if self.fail_mode_readback_on_axis == mid:
+                    val = 0 if self.modes[mid] == 3 else 3
+                else:
+                    val = self.modes[mid]
             elif reg == TARGET_SPEED_ADDR:
                 val = self.speeds[mid]
             elif reg == TARGET_POSITION_ADDR:
                 val = self.targets[mid]
             elif reg == ACTUAL_POSITION_ADDR:
                 val = self.positions[mid]
+            elif reg == 0x2C:
+                val = self.actual_forces[mid] & 0xFFFF
+            elif reg == TARGET_FORCE_ADDR:
+                val = self.target_forces[mid] & 0xFFFF
             else:
                 val = 0
 
@@ -169,12 +181,15 @@ class FakeBus:
                 elif address == TARGET_POSITION_ADDR:
                     self.targets[mid] = value
                     self.positions[mid] = value
+                elif address == TARGET_FORCE_ADDR:
+                    signed_val = int.from_bytes(bytes([value & 0xFF, (value >> 8) & 0xFF]), "little", signed=True)
+                    self.target_forces[mid] = signed_val
             # Return the same 0x0F status layout as CMD_RD_STATUS so the
             # formal Motor.write_register() parser is exercised in Mock mode.
             tgt = self.positions[mid]
             cur_pos = self.positions[mid]
             cur_mA = self.currents[mid]
-            force_g = 0
+            force_g = self.target_forces.get(mid, 0)
             force_adc = 0
             temp = 30
             err = self.faults[mid]
@@ -216,7 +231,7 @@ class FakeBus:
 class MockServoBus(FakeBus):
     """Mock UART bus simulating J7 Servo responses for offline testing."""
 
-    def __init__(self, initial_positions: Sequence[int] | None = None) -> None:
+    def __init__(self, initial_positions: Sequence[int] | None = None, initial_modes: Sequence[int] | None = None) -> None:
         super().__init__()
         from collections import deque
         self.uart_lock = threading.RLock()
@@ -229,6 +244,9 @@ class MockServoBus(FakeBus):
             for i, mid in enumerate(MOTOR_IDS):
                 self.positions[mid] = int(initial_positions[i])
                 self.targets[mid] = int(initial_positions[i])
+        if initial_modes is not None:
+            for i, mid in enumerate(MOTOR_IDS):
+                self.modes[mid] = int(initial_modes[i])
 
     def write(self, frame: bytes) -> int:
         self.written_frames.append(bytes(frame))
@@ -242,6 +260,9 @@ class MockServoBus(FakeBus):
                 pos_val = int.from_bytes(parsed.data, "little", signed=True)
                 self.positions[mid] = pos_val
                 self.targets[mid] = pos_val
+            elif parsed.register_addr == TARGET_FORCE_ADDR or parsed.register_addr == 0x27:
+                force_val = int.from_bytes(parsed.data, "little", signed=True)
+                self.target_forces[mid] = force_val
             elif parsed.register_addr == 0x1A:
                 pass
             if self.fault_on_axis is not None and mid == 1:
@@ -282,4 +303,3 @@ class MockServoBus(FakeBus):
         data = b"".join(self.rx_queue)
         self.rx_queue.clear()
         return data
-

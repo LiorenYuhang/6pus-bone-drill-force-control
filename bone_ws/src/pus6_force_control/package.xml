@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>pus6_force_control</name>
+  <version>0.1.0</version>
+  <description>6PUS native force drive and offline task-space Z force PID.</description>
+  <maintainer email="dev@example.com">bone_drill</maintainer>
+  <license>MIT</license>
+  <depend>pus6_motor_driver</depend>
+  <depend>pus6_msgs</depend>
+  <depend>pus6_research_msgs</depend>
+  <depend>rclpy</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>pus6_kinematics</depend>
+  <exec_depend>pus6_control</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+  <exec_depend>python3-scipy</exec_depend>
+  <exec_depend>python3-matplotlib</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>h30_imu</exec_depend>
+  <exec_depend>ros2run</exec_depend>
+  <test_depend>python3-pytest</test_depend>
+  <export><build_type>ament_python</build_type></export>
+</package>

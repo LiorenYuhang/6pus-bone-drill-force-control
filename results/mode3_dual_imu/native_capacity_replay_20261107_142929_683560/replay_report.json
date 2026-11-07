@@ -1,0 +1,625 @@
+{
+  "source": "OFFLINE_FIXED_FEEDBACK_REPLAY",
+  "hardware_write_count": 0,
+  "input_directory": "/home/lyapunov/6pus_bone_drill_force_control/results/mode3_dual_imu/run_20261107_132820_919946",
+  "completed_recorded_frames": 599,
+  "replayed_frames": 600,
+  "baseline_fault": {
+    "frame_index": 599,
+    "error": "joint reference tracking error exceeds configured bound"
+  },
+  "new_pid": {
+    "joint_kp_n_m": [
+      8000.0,
+      8000.0,
+      8000.0,
+      8000.0,
+      8000.0,
+      8000.0
+    ],
+    "joint_ki_n_m_s": [
+      6000.0,
+      6000.0,
+      6000.0,
+      6000.0,
+      6000.0,
+      6000.0
+    ],
+    "joint_kd_n_s_m": [
+      1000.0,
+      1000.0,
+      1000.0,
+      1000.0,
+      1000.0,
+      1000.0
+    ],
+    "joint_integral_limit_n": null,
+    "joint_increment_limit_n": null,
+    "joint_min_position_m": [
+      0.030000000000000002,
+      0.030000000000000002,
+      0.030000000000000002,
+      0.030000000000000002,
+      0.030000000000000002,
+      0.030000000000000002
+    ],
+    "joint_max_position_m": [
+      0.07,
+      0.07,
+      0.07,
+      0.07,
+      0.07,
+      0.07
+    ],
+    "joint_max_reference_speed_m_s": null,
+    "joint_derivative_filter_tau_s": 0.04,
+    "joint_position_deadband_m": 2.5e-05,
+    "joint_use_latest_feedback": true,
+    "joint_active_braking": true,
+    "joint_continuous_velocity": true,
+    "joint_integrate_while_moving": true,
+    "joint_integral_from_measured_error": true,
+    "joint_velocity_window_s": 0.08,
+    "joint_velocity_noise_span_m": 3.75e-05,
+    "joint_prediction_horizon_s": 0.02,
+    "joint_brake_horizon_cap_s": 0.1,
+    "joint_brake_rate_g_s": [
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0
+    ],
+    "joint_max_tracking_error_m": null
+  },
+  "output_policy": {
+    "pid_integral_limit_n": null,
+    "pid_increment_limit_n": null,
+    "tracking_error_exit_m": null,
+    "absolute_target_force_limit_n": 50.0,
+    "force_boundary_source": "LAF50-024D catalog maximum push/pull force; host enforced",
+    "firmware_50n_force_clamp_verified": false,
+    "normal_reference_speed_limit_m_s": null,
+    "normal_force_rate_limit_g_s": null,
+    "exceptional_recovery_rate_g_s": 5000.0
+  },
+  "absolute_force_limited_frames": 0,
+  "target_force_min_g": [
+    -1930,
+    -432,
+    153,
+    856,
+    -253,
+    -673
+  ],
+  "target_force_max_g": [
+    -118,
+    122,
+    610,
+    2183,
+    295,
+    -102
+  ],
+  "all_encoded_forces_within_catalog_50n": true,
+  "peak_integral_n": [
+    3.332194019256733,
+    2.2192947793968965,
+    1.454761570539864,
+    3.236253947161975,
+    2.1858173014853186,
+    1.5033053082997931
+  ],
+  "max_reference_shaping_error_m": 0.0,
+  "exact_recorded_request_comparison": {
+    "recorded_request_n": [
+      -12.428744525172478,
+      -4.064850215816508,
+      2.855706456975965,
+      9.086262904371614,
+      3.6845029355574095,
+      -5.045272591420676
+    ],
+    "recorded_target_force_g": [
+      -630,
+      -315,
+      457,
+      1264,
+      140,
+      -539
+    ],
+    "without_increment_cap_target_force_g": [
+      -1489,
+      -321,
+      457,
+      1783,
+      140,
+      -645
+    ]
+  },
+  "new_last_completed_input": {
+    "frame_index": 598,
+    "ns": 187766166052589,
+    "phase": "stabilize",
+    "recorded_fault_frame": false,
+    "source": "OFFLINE_FIXED_FEEDBACK_REPLAY",
+    "hardware_write_count": 0,
+    "pid": {
+      "joint_target_m": [
+        0.04632028158850286,
+        0.04773640559154019,
+        0.05158497577071594,
+        0.05365119086004151,
+        0.052165782838316924,
+        0.048403045743872386
+      ],
+      "joint_reference_m": [
+        0.04632028158850286,
+        0.04773640559154019,
+        0.05158497577071594,
+        0.05365119086004151,
+        0.052165782838316924,
+        0.048403045743872386
+      ],
+      "joint_measured_m": [
+        0.048675,
+        0.0488,
+        0.050725000000000006,
+        0.051625000000000004,
+        0.051125000000000004,
+        0.049350000000000005
+      ],
+      "joint_error_m": [
+        -0.0023547184114971406,
+        -0.0010635944084598156,
+        0.0008599757707159345,
+        0.0020261908600415074,
+        0.0010407828383169199,
+        -0.000946954256127619
+      ],
+      "joint_velocity_m_s": [
+        -0.005103091534764586,
+        -0.004422825898145707,
+        0.003976392025098256,
+        0.006023529989924656,
+        0.004810641906039159,
+        -0.0029170917673975298
+      ],
+      "joint_p_n": [
+        -17.449435604071972,
+        -7.305511930549457,
+        5.798016531634309,
+        14.570807090477144,
+        7.110518323139803,
+        -6.838427247656043
+      ],
+      "joint_i_n": [
+        -3.0433990905746677,
+        -2.0949844897734464,
+        1.347189952390891,
+        2.984044157476562,
+        2.063700543774559,
+        -1.3974641809397643
+      ],
+      "joint_d_n": [
+        5.1030915347645855,
+        4.422825898145707,
+        -3.9763920250982565,
+        -6.023529989924656,
+        -4.810641906039159,
+        2.9170917673975296
+      ],
+      "joint_requested_delta_force_n": [
+        -15.389743159882054,
+        -4.977670522177197,
+        3.168814458926943,
+        11.53132125802905,
+        4.3635769608752035,
+        -5.318799661198277
+      ],
+      "joint_delta_force_n": [
+        -15.389743159882054,
+        -4.977670522177197,
+        3.168814458926943,
+        11.53132125802905,
+        4.3635769608752035,
+        -5.318799661198277
+      ],
+      "joint_output_limited": false,
+      "joint_dt_s": 0.01873092,
+      "joint_prediction_m": [
+        0.04850146103901186,
+        0.04864959458285887,
+        0.05086022370426165,
+        0.05182983997373187,
+        0.05127696804792445,
+        0.04925784914982939
+      ],
+      "joint_control_error_m": [
+        -0.0021811794505089965,
+        -0.0009131889913186822,
+        0.0007247520664542886,
+        0.001821350886309643,
+        0.0008888147903924754,
+        -0.0008548034059570053
+      ],
+      "joint_effective_error_m": [
+        -0.0021811794505089965,
+        -0.0009131889913186822,
+        0.0007247520664542886,
+        0.001821350886309643,
+        0.0008888147903924754,
+        -0.0008548034059570053
+      ],
+      "joint_integral_error_m": [
+        -0.0023547184114971406,
+        -0.0010635944084598156,
+        0.0008599757707159345,
+        0.0020261908600415074,
+        0.0010407828383169199,
+        -0.000946954256127619
+      ],
+      "joint_prediction_horizon_s": [
+        0.034006633,
+        0.034006633,
+        0.034006633,
+        0.034006633,
+        0.031589973,
+        0.031589973
+      ],
+      "joint_feedback_age_s": [
+        0.014006633000000001,
+        0.014006633000000001,
+        0.014006633000000001,
+        0.014006633000000001,
+        0.011589973,
+        0.011589973
+      ],
+      "joint_braking_axes": [
+        false,
+        true,
+        false,
+        false,
+        false,
+        false
+      ],
+      "joint_velocity_raw_m_s": [
+        -0.005366542848852467,
+        -0.004737413750053708,
+        0.004501584610326513,
+        0.0063556858487547295,
+        0.005262146279236139,
+        -0.0024957539815052714
+      ],
+      "joint_velocity_filter_alpha": [
+        0.37427601584751347,
+        0.37427601584751347,
+        0.37427601584751347,
+        0.37427601584751347,
+        0.3739174202195017,
+        0.3739174202195017
+      ],
+      "joint_output_limited_axes": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "joint_integral_blocked_axes": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "joint_pd_opposing_axes": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "joint_pd_cancellation_n": [
+        5.1030915347645855,
+        4.422825898145707,
+        3.9763920250982565,
+        6.023529989924656,
+        4.810641906039159,
+        2.9170917673975296
+      ]
+    },
+    "recorded_target_force_g": [
+      -630,
+      -315,
+      457,
+      1264,
+      140,
+      -539
+    ],
+    "baseline_recomputed_target_force_g": [
+      -630,
+      -315,
+      457,
+      1264,
+      140,
+      -539
+    ],
+    "target_force_g": [
+      -1791,
+      -415,
+      489,
+      2032,
+      209,
+      -673
+    ],
+    "absolute_force_limited_axes": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "final_integral_blocked_axes": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "new_recorded_fault_input": {
+    "frame_index": 599,
+    "ns": 187766186060920,
+    "phase": "stabilize",
+    "recorded_fault_frame": true,
+    "source": "OFFLINE_FIXED_FEEDBACK_REPLAY",
+    "hardware_write_count": 0,
+    "pid": {
+      "joint_target_m": [
+        0.04606481777563158,
+        0.04759450499012259,
+        0.05171000382765159,
+        0.05391718714736156,
+        0.05231142900743427,
+        0.048280037458695316
+      ],
+      "joint_reference_m": [
+        0.04606481777563158,
+        0.04759450499012259,
+        0.05171000382765159,
+        0.05391718714736156,
+        0.05231142900743427,
+        0.048280037458695316
+      ],
+      "joint_measured_m": [
+        0.048575,
+        0.048675,
+        0.050775,
+        0.051725,
+        0.051250000000000004,
+        0.0492
+      ],
+      "joint_error_m": [
+        -0.0025101822243684194,
+        -0.0010804950098774121,
+        0.0009350038276515898,
+        0.0021921871473615587,
+        0.0010614290074342642,
+        -0.000919962541304685
+      ],
+      "joint_velocity_m_s": [
+        -0.005215115044720054,
+        -0.004836320232700568,
+        0.00399780868000375,
+        0.006069105311273723,
+        0.005085349926367094,
+        -0.0029481328037102173
+      ],
+      "joint_p_n": [
+        -18.629130361764055,
+        -7.297121037237952,
+        6.366703845331556,
+        15.847346901696756,
+        7.172357136956742,
+        -6.59499227574456
+      ],
+      "joint_i_n": [
+        -3.332194019256733,
+        -2.2192947793968965,
+        1.454761570539864,
+        3.236253947161975,
+        2.1858173014853186,
+        -1.5033053082997931
+      ],
+      "joint_d_n": [
+        5.215115044720054,
+        4.836320232700568,
+        -3.99780868000375,
+        -6.069105311273723,
+        -5.085349926367093,
+        2.9481328037102172
+      ],
+      "joint_requested_delta_force_n": [
+        -16.746209336300733,
+        -4.680095583934281,
+        3.82365673586767,
+        13.014495537585006,
+        4.272824512074966,
+        -5.150164780334135
+      ],
+      "joint_delta_force_n": [
+        -16.746209336300733,
+        -4.680095583934281,
+        3.82365673586767,
+        13.014495537585006,
+        4.272824512074966,
+        -5.150164780334135
+      ],
+      "joint_output_limited": false,
+      "joint_dt_s": 0.019174898000000003,
+      "joint_prediction_m": [
+        0.04839345907085209,
+        0.048506645119777335,
+        0.050914165846985146,
+        0.051936268784649464,
+        0.051414884365314675,
+        0.049104411493163386
+      ],
+      "joint_control_error_m": [
+        -0.002328641295220507,
+        -0.0009121401296547441,
+        0.0007958379806664445,
+        0.0019809183627120946,
+        0.0008965446421195927,
+        -0.00082437403446807
+      ],
+      "joint_effective_error_m": [
+        -0.002328641295220507,
+        -0.0009121401296547441,
+        0.0007958379806664445,
+        0.0019809183627120946,
+        0.0008965446421195927,
+        -0.00082437403446807
+      ],
+      "joint_integral_error_m": [
+        -0.0025101822243684194,
+        -0.0010804950098774121,
+        0.0009350038276515898,
+        0.0021921871473615587,
+        0.0010614290074342642,
+        -0.000919962541304685
+      ],
+      "joint_prediction_horizon_s": [
+        0.034810532000000005,
+        0.034810532000000005,
+        0.034810532000000005,
+        0.034810532000000005,
+        0.032423406,
+        0.032423406
+      ],
+      "joint_feedback_age_s": [
+        0.014810532000000001,
+        0.014810532000000001,
+        0.014810532000000001,
+        0.014810532000000001,
+        0.012423406000000001,
+        0.012423406000000001
+      ],
+      "joint_braking_axes": [
+        false,
+        true,
+        false,
+        false,
+        true,
+        true
+      ],
+      "joint_velocity_raw_m_s": [
+        -0.005396896592143364,
+        -0.0055073011724696705,
+        0.00403256167668185,
+        0.006143060791176479,
+        0.00553198565849542,
+        -0.002998601064385639
+      ],
+      "joint_velocity_filter_alpha": [
+        0.38128516559552106,
+        0.38128516559552106,
+        0.38128516559552106,
+        0.38128516559552106,
+        0.3808281688065104,
+        0.3808281688065104
+      ],
+      "joint_output_limited_axes": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "joint_integral_blocked_axes": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "joint_pd_opposing_axes": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "joint_pd_cancellation_n": [
+        5.215115044720054,
+        4.836320232700568,
+        3.99780868000375,
+        6.069105311273723,
+        5.085349926367093,
+        2.9481328037102172
+      ]
+    },
+    "recorded_target_force_g": null,
+    "baseline_recomputed_target_force_g": null,
+    "target_force_g": [
+      -1930,
+      -384,
+      556,
+      2183,
+      200,
+      -656
+    ],
+    "absolute_force_limited_axes": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "final_integral_blocked_axes": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "estimator_reset": "estimated pre-first-cycle positions/timestamps; original reset history unavailable",
+  "baseline_recomputed_vs_recorded_force_max_error_g": [
+    0,
+    0,
+    0,
+    0,
+    24,
+    0
+  ],
+  "last_recomputed_vs_recorded_d_error_n": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "max_recomputed_vs_recorded_d_error_n": [
+    0.0,
+    0.000301102435563666,
+    5.1600180000477425e-30,
+    0.0,
+    0.23522138987008112,
+    0.0
+  ],
+  "firmware_50n_clamp_verified": false,
+  "conclusion": "Software output comparison only; cannot infer changed motion, force response or stability success"
+}

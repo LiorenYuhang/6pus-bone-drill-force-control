@@ -25,7 +25,7 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, qos_profile_sensor_data
 from builtin_interfaces.msg import Time
 from sensor_msgs.msg import JointState
-from std_msgs.msg import Int32MultiArray
+from std_msgs.msg import Int32MultiArray, String
 
 from .safety import steps_to_meters, MOTOR_IDS
 from .j14_process_uart import append_rows, receive_packets, send_packet
@@ -35,6 +35,35 @@ try:
 except ImportError:
     TimedJointCommand = None  # type: ignore
     TimedJointFeedback = None  # type: ignore
+
+
+def populate_force_feedback(msg, row):
+    """Forward raw fields; absent legacy metadata is UNKNOWN/invalid, never zero force."""
+    hold=row.get('force_hold_g')
+    hold_stamp=row.get('force_hold_reference_monotonic_ns',0)
+    msg.force_mode_confirmed=row.get('force_mode_confirmed') is True
+    msg.force_hold_valid=(row.get('force_hold_valid') is True and hold is not None
+        and len(hold)==6 and all(type(v) is int and -32768<=v<=32767 for v in hold)
+        and type(hold_stamp) is int and hold_stamp>0)
+    msg.force_hold_g=list(hold) if msg.force_hold_valid else [0]*6
+    msg.force_hold_reference_monotonic_ns=hold_stamp if msg.force_hold_valid else 0
+    names = ('forces_g_raw', 'force_adc_raw', 'temperatures_c', 'force_valid')
+    complete = all(name in row and len(row[name]) == 6 for name in names)
+    source = row.get('feedback_source', 0)
+    msg.source = source if source in (1, 2) else 0
+    if not complete:
+        msg.force_valid = [False] * 6
+        return
+    msg.forces_g_raw = list(row['forces_g_raw'])
+    msg.force_adc_raw = list(row['force_adc_raw'])
+    msg.temperatures_c = list(row['temperatures_c'])
+    msg.force_valid = [
+        bool(row['force_valid'][i] is True and msg.source != 0
+        and -32768 <= row['forces_g_raw'][i] <= 32767
+        and 0 <= row['force_adc_raw'][i] <= 4095
+        and msg.per_axis_rx_done_monotonic_ns[i] > 0 and msg.fault_codes[i] == 0)
+        for i in range(6)
+    ]
 
 
 class Pus6FeedbackBridgeNode(Node):
@@ -52,6 +81,7 @@ class Pus6FeedbackBridgeNode(Node):
 
         # Publishers matching production names and QoS exactly
         self.joint_state_pub = self.create_publisher(JointState, "/joint_states", 10)
+        self.transport_fault_pub = self.create_publisher(String, "/pus6/force_control/transport_fault", 10)
         if TimedJointFeedback is not None:
             self.timed_feedback_pub = self.create_publisher(
                 TimedJointFeedback, "/pus6/joint_feedback/timed", qos_profile_sensor_data
@@ -138,15 +168,39 @@ class Pus6FeedbackBridgeNode(Node):
                         )
                     elif row.get("type") == "fault":
                         self.get_logger().error(f"Feedback Bridge observed child fault: {row.get('communication_fault')}")
+                        self._publish_fault_feedback(row)
+                        self.transport_fault_pub.publish(String(data=str(row.get('communication_fault', 'child_fault'))))
             except (EOFError, BrokenPipeError, ConnectionResetError):
                 self._exit_reason='child_feedback_eof'
+                self.transport_fault_pub.publish(String(data=self._exit_reason))
                 break
             except Exception as exc:
                 self.get_logger().error(f"Bridge exception: {exc}")
                 self._exit_reason=f'bridge_exception: {exc}'
+                self.transport_fault_pub.publish(String(data=self._exit_reason))
                 break
 
         self._flush_diagnostics()
+
+    def _publish_fault_feedback(self, row):
+        """Retain last raw per-axis values/time/faults without asserting fresh validity."""
+        if self.timed_feedback_pub is None or not all(
+                len(row.get(key, [])) == 6 for key in ('positions', 'currents', 'faults', 'rx_ns')):
+            return
+        msg = TimedJointFeedback()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.header.frame_id = 'pus6_base'
+        msg.snapshot_start_monotonic_ns = row.get('cycle_start_ns', 0)
+        msg.snapshot_end_monotonic_ns = row.get('cycle_end_ns', 0)
+        msg.per_axis_rx_done_monotonic_ns = list(row['rx_ns'])
+        msg.raw_steps = list(row['positions'])
+        msg.positions_meters = [0.050 + (s - 1000) * 0.000025 for s in row['positions']]
+        msg.currents_ma = list(row['currents'])
+        msg.fault_codes = list(row['faults'])
+        msg.uart_cycle_sequence = row['cycle_seq']
+        populate_force_feedback(msg, row)
+        msg.force_valid = [False] * 6
+        self.timed_feedback_pub.publish(msg)
 
     def _process_feedback_packet(
         self, row: dict[str, Any], t_recv: int, tc_recv: int, pc_recv: int
@@ -187,6 +241,7 @@ class Pus6FeedbackBridgeNode(Node):
         if self.timed_feedback_pub is not None:
             tf_msg = TimedJointFeedback()
             tf_msg.header.stamp = stamp_msg
+            tf_msg.header.frame_id = 'pus6_base'
             tf_msg.snapshot_start_monotonic_ns = row["cycle_start_ns"]
             tf_msg.snapshot_end_monotonic_ns = row["cycle_end_ns"]
             tf_msg.per_axis_rx_done_monotonic_ns = list(row["rx_ns"])
@@ -195,11 +250,12 @@ class Pus6FeedbackBridgeNode(Node):
             tf_msg.currents_ma = list(row["currents"])
             tf_msg.fault_codes = list(row["faults"])
             tf_msg.uart_cycle_sequence = row["cycle_seq"]
+            populate_force_feedback(tf_msg, row)
         else:
             tf_msg = None
 
         # 3. TimedJointCommand
-        if self.timed_command_pub is not None:
+        if self.timed_command_pub is not None and row.get('control_mode') != 3:
             tc_msg = TimedJointCommand()
             tc_msg.header.stamp = stamp_msg
             tc_msg.transaction_start_monotonic_ns = row["cycle_start_ns"]

@@ -1,0 +1,35 @@
+force_active_stabilization:
+  ros__parameters:
+    # Position M2 angular PID is retained; pose-to-wrench gains are software examples.
+    dry_run: true
+    hardware_write_enabled: false
+    is_hardware_qualified: false
+    use_fixed_lag: true
+    fixed_lag_delay_ms: 30.0
+    rate_hz: 50.0
+    imu_timeout_s: 0.1
+    max_displacement_steps: 6
+    max_current_ma: 500
+    # Exact retained Position angular-residual PID (rad/rad, 1/s, s).
+    attitude_kp: [0.05, 0.05, 0.025]
+    attitude_ki: [0.0, 0.0, 0.0]
+    attitude_kd: [0.0, 0.0015, 0.0015]
+    attitude_residual_limit_rad: [0.008726646259971648, 0.008726646259971648, 0.008726646259971648]
+    attitude_integral_limit_rad_s: [0.03490658503988659, 0.03490658503988659, 0.06981317007977318]
+    attitude_min_dt_s: 0.001
+    attitude_max_dt_s: 0.1
+    attitude_derivative_enabled: true
+    attitude_derivative_lpf_cutoff_hz: 5.0
+    # [x,y,z,rx,ry,rz]: P has N/m and Nm/rad; I=P/s, D=P*s.
+    # New force-actuated interface gains, NOT hardware tuned.
+    pose_kp: [10.0, 10.0, 10.0, 0.2, 0.2, 0.2]
+    pose_ki: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    pose_kd: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    pose_integral_limit_n_nm: [1.0, 1.0, 1.0, 0.1, 0.1, 0.1]
+    pose_derivative_filter_tau_s: 0.05
+    force_limit_n: [1.0, 1.0, 1.0]
+    moment_limit_nm: [0.1, 0.1, 0.1]
+    wrench_rate: [1.0, 1.0, 1.0, 0.1, 0.1, 0.1] # N/s, Nm/s
+    min_force_n: [-14.709975, -14.709975, -14.709975, -14.709975, -14.709975, -14.709975]
+    max_force_n: [14.709975, 14.709975, 14.709975, 14.709975, 14.709975, 14.709975]
+    max_rate_g_s: [500.0, 500.0, 500.0, 500.0, 500.0, 500.0]

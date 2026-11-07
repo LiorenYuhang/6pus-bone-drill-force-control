@@ -95,12 +95,15 @@ class ProductionDriverNode(J14ProcessMotorDriverNode):
             servo_speed=self.servo_speed,maintenance_mode=self.maintenance_mode,
             target_timeout_sec=self.target_timeout_sec,reconnect_max_jump_steps=self.reconnect_max_jump_steps,
             max_servo_duration_s=options['servo_run_duration_s'])
+        config.update(self._native_force_child_options())
         (self._production_audit_path/'production_configuration.json').write_text(json.dumps(dict(parameters=options,child_configuration=config),indent=2)+'\n')
         self._process_client=ProcessClient(config)
         self.j7_adapter=self.j7_writer=self.j7_feedback=self._process_client
         self.j7_stop_adapter=None
         ready=self._process_client.ready
-        self._process_client.update(ready['positions'],seq=0)
+        if not self.native_force_control:
+            self._process_client.update(ready['positions'],seq=0)
+        self._subscribe_native_force_commands()
         self.get_logger().info(f"Production architecture=three_process child={ready['pid']} bridge={self._process_client.bridge_proc.pid}; handshake complete")
 
     def _telemetry_publisher_loop(self):

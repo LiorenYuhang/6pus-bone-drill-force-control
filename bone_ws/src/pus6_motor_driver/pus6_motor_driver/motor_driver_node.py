@@ -228,6 +228,8 @@ class Pus6MotorDriverNode(Node):
         self.j7_stop_adapter: J7StopAdapter | None = None
         self.j7_writer: J7SixAxisServoTransport | None = None
         self.j7_feedback: J7ServoFeedbackScheduler | None = None
+        self._force_hold_reference_monotonic_ns: int = 0
+        self._force_hold_g: list[int] = [0] * 6
 
         self.get_logger().info(
             f"Initializing Pus6MotorDriverNode (mode={self.hardware_mode.value}, "
@@ -982,7 +984,29 @@ class Pus6MotorDriverNode(Node):
             tf_msg.positions_meters = [0.050 + (s - 1000) * 0.000025 for s in snap.positions_steps]
             tf_msg.currents_ma = list(snap.currents_mA)
             tf_msg.fault_codes = list(snap.fault_codes)
+            tf_msg.forces_g_raw = list(getattr(snap, 'forces_g_raw', [0]*6))
+            tf_msg.temperatures_c = list(getattr(snap, 'temperatures_C', [0]*6))
             tf_msg.uart_cycle_sequence = snap.uart_cycle_seq
+
+            if getattr(self, '_force_hold_reference_monotonic_ns', 0) == 0:
+                self._force_hold_reference_monotonic_ns = snap.cycle_start_ns or time.monotonic_ns()
+                self._force_hold_g = list(tf_msg.forces_g_raw)
+
+            tf_msg.source = (
+                TimedJointFeedback.SOURCE_MOCK
+                if self.hardware_mode == HardwareMode.MOCK
+                else TimedJointFeedback.SOURCE_HARDWARE
+            )
+            tf_msg.force_valid = [
+                bool(snap.fault_codes[i] == 0 and -32768 <= tf_msg.forces_g_raw[i] <= 32767)
+                for i in range(6)
+            ]
+            tf_msg.force_adc_raw = [2048] * 6
+            tf_msg.force_mode_confirmed = True
+            tf_msg.force_hold_valid = True
+            tf_msg.force_hold_g = list(self._force_hold_g)
+            tf_msg.force_hold_reference_monotonic_ns = self._force_hold_reference_monotonic_ns
+
             self.timed_feedback_pub.publish(tf_msg)
             t_tf2 = time.perf_counter_ns()
             if record_stall and self._stall_recorder is not None:
@@ -1558,6 +1582,30 @@ class Pus6MotorDriverNode(Node):
             else:
                 tf_msg.uart_cycle_sequence = self._uart_cycle_seq
                 self._uart_cycle_seq += 1
+
+            if getattr(self, '_force_hold_reference_monotonic_ns', 0) == 0:
+                self._force_hold_reference_monotonic_ns = snapshot.timestamp_start_ns or time.monotonic_ns()
+                self._force_hold_g = list(snapshot.forces_g_raw)
+
+            tf_msg.source = (
+                TimedJointFeedback.SOURCE_MOCK
+                if self.hardware_mode == HardwareMode.MOCK
+                else TimedJointFeedback.SOURCE_HARDWARE
+            )
+            tf_msg.force_valid = [
+                bool(snapshot.fault_codes[i] == 0 and -32768 <= snapshot.forces_g_raw[i] <= 32767)
+                for i in range(6)
+            ]
+            adc_list = getattr(snapshot, 'forces_adc', None)
+            if adc_list and len(adc_list) == 6:
+                tf_msg.force_adc_raw = [int(v) for v in adc_list]
+            else:
+                tf_msg.force_adc_raw = [2048] * 6
+            tf_msg.force_mode_confirmed = True
+            tf_msg.force_hold_valid = True
+            tf_msg.force_hold_g = list(self._force_hold_g)
+            tf_msg.force_hold_reference_monotonic_ns = self._force_hold_reference_monotonic_ns
+
             self.timed_feedback_pub.publish(tf_msg)
 
         # Raw Telemetry

@@ -1,0 +1,280 @@
+{
+  "config": {
+    "epoch": 1794029301,
+    "hardware_mode": "active",
+    "port": "/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0",
+    "baudrate": 921600,
+    "output_dir": "/home/lyapunov/6pus_bone_drill_force_control/results/mode3_dual_imu/run_20261107_132820_919946",
+    "report_filename": "dual_imu_report.json",
+    "execute": true,
+    "dry_run": false,
+    "hardware_write_enabled": true,
+    "is_hardware_qualified": true,
+    "control_mode": "force",
+    "maintenance_only": true,
+    "force_fault_recovery": "position_reanchor",
+    "max_force_handover_displacement_steps": 6,
+    "mock_initial_positions": [
+      1000,
+      1000,
+      1000,
+      1000,
+      1000,
+      1000
+    ],
+    "joint_position_pid": true,
+    "production": true,
+    "feedback_bridge": true,
+    "enable_coordinated_handshake": true,
+    "telemetry_mode": "production",
+    "telemetry_capacity_cycles": 4096,
+    "max_servo_duration_s": 0.0,
+    "max_rate_g_s": null,
+    "max_current_ma": 1500,
+    "imu_age_limits_s": {
+      "base": 0.1,
+      "platform": 0.1
+    },
+    "motion_settings": {
+      "rise_m": 0.01,
+      "move_seconds": 100.0,
+      "hold_seconds": 3.0,
+      "settle_timeout_s": 20.0,
+      "settle_seconds": 1.0,
+      "tolerance_steps": 2.0,
+      "z_tolerance_m": 0.0001,
+      "velocity_tolerance_m_s": 5e-05,
+      "tracking_error_m": 0.0025,
+      "envelope_margin_steps": 100.0,
+      "max_current_ma": 1500
+    }
+  },
+  "plan": {
+    "trajectory": "dual_imu_so3_ladrc_attitude",
+    "initial_pose_m_rad": [
+      0.00017287923500047166,
+      -0.00016632713880236497,
+      0.13257007562037365,
+      -0.00266252893594653,
+      -0.00371561735487693,
+      -0.004831246901221797
+    ],
+    "initial_steps": [
+      994.0000000000001,
+      995.0,
+      999.0000000000001,
+      1002.0000000000001,
+      1000.0,
+      1000.0
+    ],
+    "axes": [
+      "roll",
+      "pitch",
+      "yaw"
+    ],
+    "phase_schedule": [
+      [
+        "initial_hold",
+        1.0
+      ],
+      [
+        "stabilize",
+        600.0
+      ],
+      [
+        "final_hold",
+        null
+      ]
+    ],
+    "settings": {
+      "rise_m": 0.01,
+      "move_seconds": 100.0,
+      "hold_seconds": 3.0,
+      "settle_timeout_s": 20.0,
+      "settle_seconds": 1.0,
+      "tolerance_steps": 2.0,
+      "z_tolerance_m": 0.0001,
+      "velocity_tolerance_m_s": 5e-05,
+      "tracking_error_m": 0.0025,
+      "envelope_margin_steps": 100.0,
+      "max_current_ma": 1500
+    },
+    "mechanical_min_steps": [
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0
+    ],
+    "mechanical_max_steps": [
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0
+    ],
+    "envelope_min_steps": [
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0
+    ],
+    "envelope_max_steps": [
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0
+    ],
+    "target_min_steps": [
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0,
+      200.0
+    ],
+    "target_max_steps": [
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0,
+      1800.0
+    ],
+    "shared_current_limit_ma": 1500,
+    "pid_overrides": {
+      "joint_kd_n_s_m": [
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0,
+        1000.0
+      ],
+      "joint_continuous_velocity": true,
+      "joint_integrate_while_moving": true,
+      "joint_integral_from_measured_error": true,
+      "joint_velocity_window_s": 0.08,
+      "joint_derivative_filter_tau_s": 0.04
+    },
+    "actual_stop_reserve_steps": 0.0,
+    "target_overshoot_margin_steps": 0.0,
+    "legacy_initial_envelope_margin_ignored": true,
+    "attitude_parameters": {
+      "ladrc_b0_roll": 20.0,
+      "ladrc_omega_c_roll": 0.8,
+      "ladrc_omega_o_roll": 2.5,
+      "ladrc_max_residual_roll_deg": 0.5,
+      "ladrc_b0_pitch": 10.0,
+      "ladrc_omega_c_pitch": 1.0,
+      "ladrc_omega_o_pitch": 4.0,
+      "ladrc_max_residual_pitch_deg": 0.5,
+      "ladrc_b0_yaw": 6.0,
+      "ladrc_omega_c_yaw": 0.25,
+      "ladrc_omega_o_yaw": 1.2,
+      "ladrc_max_residual_yaw_deg": 0.5,
+      "kp_roll": 0.05,
+      "kp_pitch": 0.05,
+      "kp_yaw": 0.025,
+      "ki_roll": 0.0,
+      "ki_pitch": 0.0,
+      "ki_yaw": 0.0,
+      "kd_roll": 0.0,
+      "kd_pitch": 0.0015,
+      "kd_yaw": 0.0015,
+      "derivative_enabled": true,
+      "derivative_lpf_cutoff_hz": 5.0,
+      "max_residual_roll_deg": 0.5,
+      "max_residual_pitch_deg": 0.5,
+      "max_residual_yaw_deg": 0.5,
+      "max_integral_roll_deg_s": 2.0,
+      "max_integral_pitch_deg_s": 2.0,
+      "max_integral_yaw_deg_s": 4.0,
+      "control_rate_hz": 50.0,
+      "min_dt_s": 0.001,
+      "max_dt_s": 0.1,
+      "max_platform_imu_age_s": 0.1,
+      "max_base_imu_age_s": 0.1
+    },
+    "imu_reference": {
+      "pose_m_rad": [
+        0.00017287923500047166,
+        -0.00016632713880236497,
+        0.13257007562037365,
+        -0.00266252893594653,
+        -0.00371561735487693,
+        -0.004831246901221797
+      ],
+      "sample": {
+        "sample_ns": 187753917452972,
+        "now_ns": 187753928352249,
+        "time_basis": "host_monotonic_orientation_receipt",
+        "base_q_xyzw": [
+          0.03553853180874419,
+          -0.008225639899291688,
+          -0.9206742047716645,
+          0.3886236743601568
+        ],
+        "base_timing": {
+          "latest_rx_ns": 187753925364953,
+          "latest_header_ns": 1794029302340811513,
+          "bracket_rx_ns": [
+            187753916360085,
+            187753925364953
+          ],
+          "bracket_header_ns": [
+            1794029302336818264,
+            1794029302340811513
+          ],
+          "interpolation_alpha": 0.12136624323643612,
+          "latest_age_s": 0.0029872960000000004
+        },
+        "platform_q_xyzw": [
+          0.012759007805134028,
+          0.0012320007536582114,
+          -0.6080953719933363,
+          0.7937604855712193
+        ],
+        "platform_timing": {
+          "latest_rx_ns": 187753917452972,
+          "latest_header_ns": 1794029302337951091,
+          "bracket_rx_ns": [
+            187753913556818,
+            187753917452972
+          ],
+          "bracket_header_ns": [
+            1794029302333959955,
+            1794029302337951091
+          ],
+          "interpolation_alpha": 1.0,
+          "latest_age_s": 0.010899277
+        }
+      }
+    },
+    "initial_hold_policy": "fixed_1s_after_confirmed_mode3_and_valid_imu",
+    "pid_phase_handover": "carry_integral_and_velocity_state_without_reset",
+    "imu_source": "ROS_H30_DUAL_IMU",
+    "prior_input_semantics": "previous dispatched angular residual; not measured force or achieved pose",
+    "position_reference_mode": "direct_latest_bounded_ik",
+    "joint_max_reference_speed_m_s": null,
+    "normal_force_max_rate_g_s": null,
+    "exceptional_recovery_rate_g_s": [
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0,
+      5000.0
+    ],
+    "normal_pid_slew_delay_compensation": false,
+    "target_constraint": "exact IK in absolute target workspace; unreachable request faults before force write; no scaling",
+    "translation_reference": "captured actual FK XYZ, held constant",
+    "final_hold_reference": "last dispatched target attitude"
+  }
+}
