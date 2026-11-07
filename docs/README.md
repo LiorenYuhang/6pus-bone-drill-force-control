@@ -4,6 +4,7 @@
 
 | 主题 | 当前入口 | 内容 |
 |---|---|---|
+| 系统学习与讲解 | [Force 完整中文技术指南](technical_guide/README_CN.md) | 从控制原理、实际函数与参数，到三进程数据流、硬件执行和 Home 的完整阅读路线 |
 | 系统架构 | [Parent / UART Child / Feedback Bridge](architecture/three_process.md) | UART 独占、IPC、时序、反馈与异步记录、停止边界 |
 | 控制 | [双 IMU → IK → 六轴 PI-D](control/dual_imu_position_force.md) | 坐标、时间对齐、SO(3)/LADRC、位置反馈与力输出 |
 | 输出策略 | [原生能力策略与回放](control/native_capacity.md) | ±50 N 依据、取消的实验限幅、39 项软件测试与历史输入回放 |
@@ -22,6 +23,7 @@
 
 ```text
 docs/
+├── technical_guide/        从控制原理到源码执行的完整中文讲解
 ├── architecture/           当前三进程架构
 ├── control/                当前控制链与原生能力输出策略
 ├── hardware/               厂家资料和寄存器解释
@@ -46,6 +48,6 @@ docs/
 
 `results/` 中 186 份 Markdown 属于实验输出、迁移记录、原始摘录和交付包；包括包内重复副本，保留内容和路径，不进行去重覆盖。`agent_docs/` 中冻结/J-stage/验证报告、参考包及其导航保留；可迁移的 11 份非冻结架构/研究文档已进入 `archive/inherited/`。`AGENTS.md`、模块 README、供应商知识库和日志 README 保留原位置。它们都在全量分类清单中，不因扩展名相同而搬离原始上下文。
 
-旧文件名若被控制脚本或冻结文档引用，留下简短兼容入口；正文只维护一份。旧首页的 Route A 内容完整归档，`README_CN.md` 统一指向当前首页。当前说明和归档说明发生差异时，首先比较入口、日期和证据等级，而不是把旧数值强行更新到历史正文中。
+旧文件名若被控制脚本或冻结文档引用，留下简短兼容入口；正文只维护一份。旧首页的 Route A 内容完整归档，根目录 `README.md` / `README_CN.md` 现分别提供完整英文/中文项目介绍。当前说明和归档说明发生差异时，首先比较入口、日期和证据等级，而不是把旧数值强行更新到历史正文中。
 
 本轮没有修改任何程序、参数、配置、测试或历史运行数据，没有修改正式保留 Tag。具体链接检查范围和遗留情况见[文档检查说明](development/documentation_checks.md)。
