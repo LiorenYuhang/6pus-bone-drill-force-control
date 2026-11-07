@@ -1,0 +1,443 @@
+# 全部 Markdown 分类清单
+
+整理前读取了 402 份非生成 Markdown 的内容、标题和主题；以下逐文件列出最终正文位置与原用途。另有 13 份 build/install/cache 生成副本不纳入迁移，不改动工作空间生成内容。所有实验原始 Markdown、冻结记录与模块原位说明均保留。
+
+当前总导航见 [docs/README](../README.md)，新旧正文路径见[迁移对照](documentation_map.md)。归档文档的参数和结论对应其记录日期；目录存在不等于证据都支持当前 Force。
+
+| 分类 | 整理前份数 |
+|---|---:|
+| 原位保留：操作规则 | 2 |
+| 根目录入口 | 2 |
+| 原位保留：模块、传感器与供应商说明 | 12 |
+| 原位保留：Position 历史、决策与参考包 | 115 |
+| 迁入 docs 的正文 | 76 |
+| 原位保留：冻结资产 | 9 |
+| 原位保留：实验、原始摘录与交付包 | 186 |
+
+## 原位保留：操作规则
+
+- [6PUS ROS2 & Motor Control — Agent Operational Rules](<../../AGENTS.md>) — `AGENTS.md`
+- [UART Multi Motor Agent Rules](<../../up/motor/uart_multi/AGENTS.md>) — `up/motor/uart_multi/AGENTS.md`
+
+## 根目录入口
+
+- [6PUS Native Force Control](<../../README.md>) — `README.md`
+- [6PUS 原生力控工程](<../../README_CN.md>) — `README_CN.md`
+
+## 原位保留：模块、传感器与供应商说明
+
+- [ATK-MW8266D WiFi Module Driver for STM32H743VIT6](<../../STM32/Communication/WIFI/README.md>) — `STM32/Communication/WIFI/README.md`
+- [IMU 惯导模块项目](<../../STM32/sensor/IMU/README.md>) — `STM32/sensor/IMU/README.md`
+- [STM32H743 IMU 项目教程](<../../STM32/sensor/IMU/TUTORIAL.md>) — `STM32/sensor/IMU/TUTORIAL.md`
+- [六轴力矩 / 轴向力研究链（仅 Mock）](<../../bone_ws/scripts/research/force_torque_control/README.md>) — `bone_ws/scripts/research/force_torque_control/README.md`
+- [pus6_control: Control System Architecture for 6PUS Parallel Manipulator](<../../bone_ws/src/pus6_control/README.md>) — `bone_ws/src/pus6_control/README.md`
+- [部署指南](<../../hardware/功能模块/WHEELTEC_H30惯导产品资料/WHEELTEC_H30惯导产品资料/h30-ins-knowledge-base/DEPLOYMENT.md>) — `hardware/功能模块/WHEELTEC_H30惯导产品资料/WHEELTEC_H30惯导产品资料/h30-ins-knowledge-base/DEPLOYMENT.md`
+- [WHEELTEC H30 INS Knowledge Base](<../../hardware/功能模块/WHEELTEC_H30惯导产品资料/WHEELTEC_H30惯导产品资料/h30-ins-knowledge-base/README.md>) — `hardware/功能模块/WHEELTEC_H30惯导产品资料/WHEELTEC_H30惯导产品资料/h30-ins-knowledge-base/README.md`
+- [UART and motor test log archive](<../../up/motor/uart_multi/logs/README.md>) — `up/motor/uart_multi/logs/README.md`
+- [UART Phase Baseline: PASS](<../../up/motor/uart_multi/logs/archive/uart_phase_baseline/README.md>) — `up/motor/uart_multi/logs/archive/uart_phase_baseline/README.md`
+- [ID1 motion experiment logs](<../../up/motor/uart_multi/logs/id1_motion/README.md>) — `up/motor/uart_multi/logs/id1_motion/README.md`
+- [WHEELTEC H30 IMU — ROS 2 Jazzy](<../../up/sensor/IMU/README.md>) — `up/sensor/IMU/README.md`
+- [H30 IMU 实时曲线与 CSV 快速运行说明](<../../up/sensor/IMU/fastreadme.md>) — `up/sensor/IMU/fastreadme.md`
+
+## 原位保留：Position 历史、决策与参考包
+
+- [6PUS 并联机器人权威文档导航库 (agent_docs)](<../../agent_docs/README.md>) — `agent_docs/README.md`
+- [6PUS 当前开发阶段状态卡 (Current Stage State Sheet)](<../../agent_docs/decisions/CURRENT_STAGE.md>) — `agent_docs/decisions/CURRENT_STAGE.md`
+- [J7-B0：J6 Frozen Baseline 运行模式只读审查](<../../agent_docs/decisions/J7_B0_RUNTIME_MODE_AUDIT.md>) — `agent_docs/decisions/J7_B0_RUNTIME_MODE_AUDIT.md`
+- [J7-C0：Servo Mode 隔离实验架构设计](<../../agent_docs/decisions/J7_C0_SERVO_ARCHITECTURE_DESIGN.md>) — `agent_docs/decisions/J7_C0_SERVO_ARCHITECTURE_DESIGN.md`
+- [J7-C1 Servo Mode Mock Validation Report](<../../agent_docs/decisions/J7_C1_SERVO_MOCK_VALIDATION_REPORT.md>) — `agent_docs/decisions/J7_C1_SERVO_MOCK_VALIDATION_REPORT.md`
+- [J7-C2.2 六轴 Servo UART 时间预算设计审查](<../../agent_docs/decisions/J7_C2_2_SERVO_MULTIAXIS_TIMING_DESIGN.md>) — `agent_docs/decisions/J7_C2_2_SERVO_MULTIAXIS_TIMING_DESIGN.md`
+- [J7-C2.3 Servo Transport / RX / Feedback Mock Design](<../../agent_docs/decisions/J7_C2_3_SERVO_TRANSPORT_FEEDBACK_MOCK_DESIGN.md>) — `agent_docs/decisions/J7_C2_3_SERVO_TRANSPORT_FEEDBACK_MOCK_DESIGN.md`
+- [J7-C2.1 六电机 UART 时间预算审查](<../../agent_docs/decisions/J7_C2_UART_TIMING_BUDGET_AUDIT.md>) — `agent_docs/decisions/J7_C2_UART_TIMING_BUDGET_AUDIT.md`
+- [J7-C3 六电机同目标 Servo 硬件验证方案](<../../agent_docs/decisions/J7_C3_SIX_AXIS_SERVO_VALIDATION_PLAN.md>) — `agent_docs/decisions/J7_C3_SIX_AXIS_SERVO_VALIDATION_PLAN.md`
+- [J7-C4 六轴 Servo 实机前代码就绪审查](<../../agent_docs/decisions/J7_C4_SIX_AXIS_SERVO_READINESS_AUDIT.md>) — `agent_docs/decisions/J7_C4_SIX_AXIS_SERVO_READINESS_AUDIT.md`
+- [J7-C5 六轴 Servo Transport 实现记录](<../../agent_docs/decisions/J7_C5_SIX_AXIS_SERVO_TRANSPORT_IMPLEMENTATION.md>) — `agent_docs/decisions/J7_C5_SIX_AXIS_SERVO_TRANSPORT_IMPLEMENTATION.md`
+- [J7-C6 六轴 Servo Feedback Scheduler 实现记录](<../../agent_docs/decisions/J7_C6_FEEDBACK_SCHEDULER_IMPLEMENTATION.md>) — `agent_docs/decisions/J7_C6_FEEDBACK_SCHEDULER_IMPLEMENTATION.md`
+- [J7-C7 六轴 Servo Experiment Runner 实现记录](<../../agent_docs/decisions/J7_C7_SERVO_EXPERIMENT_RUNNER_IMPLEMENTATION.md>) — `agent_docs/decisions/J7_C7_SERVO_EXPERIMENT_RUNNER_IMPLEMENTATION.md`
+- [J7-C8 六轴 Servo 实机前代码审查](<../../agent_docs/decisions/J7_C8_REAL_HARDWARE_PREFLIGHT_AUDIT.md>) — `agent_docs/decisions/J7_C8_REAL_HARDWARE_PREFLIGHT_AUDIT.md`
+- [J7-C9 Real UART Adapter + Stop Path 实现记录](<../../agent_docs/decisions/J7_C9_REAL_UART_ADAPTER_IMPLEMENTATION.md>) — `agent_docs/decisions/J7_C9_REAL_UART_ADAPTER_IMPLEMENTATION.md`
+- [6PUS Stage J8: Continuous Cartesian Servo & Design-B Feedback Hardware Qualification Report](<../../agent_docs/decisions/J8_FINAL_HARDWARE_QUALIFICATION.md>) — `agent_docs/decisions/J8_FINAL_HARDWARE_QUALIFICATION.md`
+- [Existing ROS2 UART Implementation Audit (inspire_motor_uart)](<../../agent_docs/decisions/ROS2_UART_EXISTING_CODE_AUDIT.md>) — `agent_docs/decisions/ROS2_UART_EXISTING_CODE_AUDIT.md`
+- [UART 电机控制实现对比审计](<../../agent_docs/decisions/UART_MOTOR_CONTROL_COMPARATIVE_AUDIT_CN.md>) — `agent_docs/decisions/UART_MOTOR_CONTROL_COMPARATIVE_AUDIT_CN.md`
+- [J14 IMU Freshness Timeout Observation](<../../agent_docs/issues/J14_IMU_FRESHNESS_TIMEOUT_OBSERVATION.md>) — `agent_docs/issues/J14_IMU_FRESHNESS_TIMEOUT_OBSERVATION.md`
+- [J14 USB-UART Disconnect Runtime Observation](<../../agent_docs/issues/J14_USB_UART_DISCONNECT_RUNTIME_OBSERVATION.md>) — `agent_docs/issues/J14_USB_UART_DISCONNECT_RUNTIME_OBSERVATION.md`
+- [J6 HOME/PARK 最终验证摘要](<../../agent_docs/j6/J6_FINAL_SUMMARY.md>) — `agent_docs/j6/J6_FINAL_SUMMARY.md`
+- [J6 HOME 首次实机调试门禁与执行评审更新](<../../agent_docs/j6/J6_HOME_COMMISSIONING_GATE_UPDATE_CN.md>) — `agent_docs/j6/J6_HOME_COMMISSIONING_GATE_UPDATE_CN.md`
+- [J6 HOME/PARK 已验证基线与十循环回归程序](<../../agent_docs/j6/J6_HOME_PARK_VALIDATED_BASELINE_AND_10_CYCLE_PROCEDURE_CN.md>) — `agent_docs/j6/J6_HOME_PARK_VALIDATED_BASELINE_AND_10_CYCLE_PROCEDURE_CN.md`
+- [J6 Phase 0 First Hardware Inspection Record](<../../agent_docs/j6/J6_PHASE0_FIRST_HARDWARE_INSPECTION_RECORD.md>) — `agent_docs/j6/J6_PHASE0_FIRST_HARDWARE_INSPECTION_RECORD.md`
+- [J6 Phase 0 首次实机检查记录](<../../agent_docs/j6/J6_PHASE0_FIRST_HARDWARE_INSPECTION_RECORD_CN.md>) — `agent_docs/j6/J6_PHASE0_FIRST_HARDWARE_INSPECTION_RECORD_CN.md`
+- [J6 Phase 2 人工确认记录](<../../agent_docs/j6/J6_PHASE2_MANUAL_VERIFICATION_RECORD_CN.md>) — `agent_docs/j6/J6_PHASE2_MANUAL_VERIFICATION_RECORD_CN.md`
+- [J6 Phase 3 总装 6PUS 首次运动策略设计评审](<../../agent_docs/j6/J6_PHASE3_CARTESIAN_FIRST_MOTION_STRATEGY_REVIEW_CN.md>) — `agent_docs/j6/J6_PHASE3_CARTESIAN_FIRST_MOTION_STRATEGY_REVIEW_CN.md`
+- [J6 Phase 3 首次运动就绪性审计报告](<../../agent_docs/j6/J6_PHASE3_FIRST_MOTION_READINESS_REPORT_CN.md>) — `agent_docs/j6/J6_PHASE3_FIRST_MOTION_READINESS_REPORT_CN.md`
+- [J6 Phase 3 首次运动安全审查](<../../agent_docs/j6/J6_PHASE3_FIRST_MOTION_SAFETY_REVIEW_CN.md>) — `agent_docs/j6/J6_PHASE3_FIRST_MOTION_SAFETY_REVIEW_CN.md`
+- [J6 Phase 3 首次运动观测记录器准备说明](<../../agent_docs/j6/J6_PHASE3_MOTION_OBSERVATION_LOGGER_CN.md>) — `agent_docs/j6/J6_PHASE3_MOTION_OBSERVATION_LOGGER_CN.md`
+- [6PUS Real-Hardware Positioning and Attitude Tracking Performance Summary](<../../agent_docs/reports/REAL_HARDWARE_PERFORMANCE_SUMMARY.md>) — `agent_docs/reports/REAL_HARDWARE_PERFORMANCE_SUMMARY.md`
+- [J10-A10 Pitch +/- Operational Characterization](<../../agent_docs/reports/j10/J10_A10_PITCH_COMPLETE_OPERATIONAL_CHARACTERIZATION_20260909.md>) — `agent_docs/reports/j10/J10_A10_PITCH_COMPLETE_OPERATIONAL_CHARACTERIZATION_20260909.md`
+- [J10-A11 Yaw +/- Operational Characterization & A11.4 Closure Report Correction](<../../agent_docs/reports/j10/J10_A11_YAW_COMPLETE_OPERATIONAL_CHARACTERIZATION_20260909.md>) — `agent_docs/reports/j10/J10_A11_YAW_COMPLETE_OPERATIONAL_CHARACTERIZATION_20260909.md`
+- [J10-A12 Z+/- Complete Operational Characterization](<../../agent_docs/reports/j10/J10_A12_Z_COMPLETE_OPERATIONAL_CHARACTERIZATION_20260909.md>) — `agent_docs/reports/j10/J10_A12_Z_COMPLETE_OPERATIONAL_CHARACTERIZATION_20260909.md`
+- [J10-A4 X+ Large-Motion Qualification & Re-validation](<../../agent_docs/reports/j10/J10_A4_X_POS_LARGE_MOTION_20260909.md>) — `agent_docs/reports/j10/J10_A4_X_POS_LARGE_MOTION_20260909.md`
+- [J10-A5 X+ Operational Boundary Closure](<../../agent_docs/reports/j10/J10_A5_X_POS_OPERATIONAL_BOUNDARY_20260909.md>) — `agent_docs/reports/j10/J10_A5_X_POS_OPERATIONAL_BOUNDARY_20260909.md`
+- [J10-A6.1 Actuator-Limit Policy Cleanup](<../../agent_docs/reports/j10/J10_A6_1_ACTUATOR_LIMIT_POLICY_CLEANUP_20260909.md>) — `agent_docs/reports/j10/J10_A6_1_ACTUATOR_LIMIT_POLICY_CLEANUP_20260909.md`
+- [J10-A6.2 X+ Absolute-Bound Continuation](<../../agent_docs/reports/j10/J10_A6_2_X_POS_ABSOLUTE_BOUND_CONTINUATION_20260909.md>) — `agent_docs/reports/j10/J10_A6_2_X_POS_ABSOLUTE_BOUND_CONTINUATION_20260909.md`
+- [J10-A6 X+ Exploratory-Envelope Closure](<../../agent_docs/reports/j10/J10_A6_X_POS_EXPLORATORY_ENVELOPE_CLOSURE_20260909.md>) — `agent_docs/reports/j10/J10_A6_X_POS_EXPLORATORY_ENVELOPE_CLOSURE_20260909.md`
+- [J10-A7 X- Complete Operational Workspace Characterization](<../../agent_docs/reports/j10/J10_A7_X_NEGATIVE_COMPLETE_CHARACTERIZATION_20260909.md>) — `agent_docs/reports/j10/J10_A7_X_NEGATIVE_COMPLETE_CHARACTERIZATION_20260909.md`
+- [J10-A8.1 Y+/- Boundary Closure](<../../agent_docs/reports/j10/J10_A8_1_Y_BOUNDARY_CLOSURE_20260909.md>) — `agent_docs/reports/j10/J10_A8_1_Y_BOUNDARY_CLOSURE_20260909.md`
+- [J10-A8 Y+/- Complete Operational Workspace Characterization](<../../agent_docs/reports/j10/J10_A8_Y_COMPLETE_CHARACTERIZATION_20260909.md>) — `agent_docs/reports/j10/J10_A8_Y_COMPLETE_CHARACTERIZATION_20260909.md`
+- [J10-A9.1 Roll Operational Boundary Refinement](<../../agent_docs/reports/j10/J10_A9_1_ROLL_OPERATIONAL_BOUNDARY_REFINEMENT_20260909.md>) — `agent_docs/reports/j10/J10_A9_1_ROLL_OPERATIONAL_BOUNDARY_REFINEMENT_20260909.md`
+- [J10-A9.2 Roll Operational Boundary Closure](<../../agent_docs/reports/j10/J10_A9_2_ROLL_OPERATIONAL_BOUNDARY_CLOSURE_20260909.md>) — `agent_docs/reports/j10/J10_A9_2_ROLL_OPERATIONAL_BOUNDARY_CLOSURE_20260909.md`
+- [J10-A9.3 Roll- Operational Boundary Refinement](<../../agent_docs/reports/j10/J10_A9_3_ROLL_NEGATIVE_BOUNDARY_REFINEMENT_20260909.md>) — `agent_docs/reports/j10/J10_A9_3_ROLL_NEGATIVE_BOUNDARY_REFINEMENT_20260909.md`
+- [J10-A9 Roll +/- Characterization](<../../agent_docs/reports/j10/J10_A9_ROLL_COMPLETE_CHARACTERIZATION_20260909.md>) — `agent_docs/reports/j10/J10_A9_ROLL_COMPLETE_CHARACTERIZATION_20260909.md`
+- [J9.1-4E Translational Coupling Audit](<../../agent_docs/reports/j9_1/j9_1_4e_xyz_translation_coupling_analysis.md>) — `agent_docs/reports/j9_1/j9_1_4e_xyz_translation_coupling_analysis.md`
+- [J9.1-4F Platform IMU Lever-Arm Identifiability Audit](<../../agent_docs/reports/j9_1/j9_1_4f_platform_lever_arm_identifiability.md>) — `agent_docs/reports/j9_1/j9_1_4f_platform_lever_arm_identifiability.md`
+- [J5 Future Optimization](<../../agent_docs/research/future/J5_FUTURE_OPTIMIZATION.md>) — `agent_docs/research/future/J5_FUTURE_OPTIMIZATION.md`
+- [J10 6DOF Axis-Wise Operational Safe Workspace Measurement — Final Summary](<../../agent_docs/stages/J10/J10_FINAL_SUMMARY.md>) — `agent_docs/stages/J10/J10_FINAL_SUMMARY.md`
+- [J10 -> J11 Handoff Document](<../../agent_docs/stages/J10/J10_TO_J11_HANDOFF.md>) — `agent_docs/stages/J10/J10_TO_J11_HANDOFF.md`
+- [J11 Demo B USB/UART Fault Audit](<../../agent_docs/stages/J11/J11_DEMO_B_USB_UART_FAULT_AUDIT.md>) — `agent_docs/stages/J11/J11_DEMO_B_USB_UART_FAULT_AUDIT.md`
+- [J11 Final Summary](<../../agent_docs/stages/J11/J11_FINAL_SUMMARY.md>) — `agent_docs/stages/J11/J11_FINAL_SUMMARY.md`
+- [J11-M1 最终总结与冻结归档 (Final Summary & Baseline Freeze)](<../../agent_docs/stages/J11/J11_M1_FINAL_SUMMARY.md>) — `agent_docs/stages/J11/J11_M1_FINAL_SUMMARY.md`
+- [J11 Canonical System-Level Controller Performance Comparison Archive](<../../agent_docs/stages/J11/J11_M1_M2_CONTROL_COMPARISON.md>) — `agent_docs/stages/J11/J11_M1_M2_CONTROL_COMPARISON.md`
+- [Implementation Plan - J11-RT2B: Servo Telemetry Publication Decoupling](<../../agent_docs/stages/J11/J11_RT2B_SERVO_TELEMETRY_DECOUPLING_PLAN.md>) — `agent_docs/stages/J11/J11_RT2B_SERVO_TELEMETRY_DECOUPLING_PLAN.md`
+- [J11/J12 Runtime Scheduler Blocker & Diagnostics Audit](<../../agent_docs/stages/J11/J11_RUNTIME_SCHEDULER_BLOCKER.md>) — `agent_docs/stages/J11/J11_RUNTIME_SCHEDULER_BLOCKER.md`
+- [J11 -> J12 Handoff](<../../agent_docs/stages/J11/J11_TO_J12_HANDOFF.md>) — `agent_docs/stages/J11/J11_TO_J12_HANDOFF.md`
+- [Stage J11: PID 3DOF World-Attitude Stabilization / Anti-Vibration](<../../agent_docs/stages/J11/README.md>) — `agent_docs/stages/J11/README.md`
+- [J12 最终总结报告 (J12 Final Summary)](<../../agent_docs/stages/J12/J12_FINAL_SUMMARY.md>) — `agent_docs/stages/J12/J12_FINAL_SUMMARY.md`
+- [J12 至 J13 阶段交接规范 (J12 to J13 Handoff)](<../../agent_docs/stages/J12/J12_TO_J13_HANDOFF.md>) — `agent_docs/stages/J12/J12_TO_J13_HANDOFF.md`
+- [J13-2A: LADRC 影子模式实机资格认证总结 (LADRC Shadow Mode Real-Hardware Qualification)](<../../agent_docs/stages/J13/J13_2A_LADRC_SHADOW_QUALIFICATION.md>) — `agent_docs/stages/J13/J13_2A_LADRC_SHADOW_QUALIFICATION.md`
+- [J13-2B1: Roll 单轴 LADRC 物理接管静态验收总结 (Roll Single-Axis LADRC Active Takeover — Static Qualification)](<../../agent_docs/stages/J13/J13_2B1_ROLL_ACTIVE_STATIC_QUALIFICATION.md>) — `agent_docs/stages/J13/J13_2B1_ROLL_ACTIVE_STATIC_QUALIFICATION.md`
+- [J13-2B1 静态重复性补充分析报告 (J13-2B1 Static Repeat Supplement)](<../../agent_docs/stages/J13/J13_2B1_STATIC_REPEAT_SUPPLEMENT.md>) — `agent_docs/stages/J13/J13_2B1_STATIC_REPEAT_SUPPLEMENT.md`
+- [J13-E0-2 Bounded UART I/O Runtime Fix 专项报告](<../../agent_docs/stages/J13/J13_E0_2_BOUNDED_UART_FIX_REPORT.md>) — `agent_docs/stages/J13/J13_E0_2_BOUNDED_UART_FIX_REPORT.md`
+- [J13-E0-4 Remove Python Busy-Wait From Servo Runtime 专项报告](<../../agent_docs/stages/J13/J13_E0_4_BUSY_WAIT_REMOVAL_REPORT.md>) — `agent_docs/stages/J13/J13_E0_4_BUSY_WAIT_REMOVAL_REPORT.md`
+- [J13 最终总结报告 (J13 Final Summary)](<../../agent_docs/stages/J13/J13_FINAL_SUMMARY.md>) — `agent_docs/stages/J13/J13_FINAL_SUMMARY.md`
+- [J13 至 J14 阶段交接规范 (J13 to J14 Handoff)](<../../agent_docs/stages/J13/J13_TO_J14_HANDOFF.md>) — `agent_docs/stages/J13/J13_TO_J14_HANDOFF.md`
+- [J14-A1.13 三进程协调启动握手实验与归因总结报告](<../../agent_docs/stages/J14/J14_A1_13_THREE_PROCESS_COORDINATED_HANDSHAKE.md>) — `agent_docs/stages/J14/J14_A1_13_THREE_PROCESS_COORDINATED_HANDSHAKE.md`
+- [J14-A1.1 UART TX Backpressure & Timeout Semantics Characterization](<../../agent_docs/stages/J14/J14_A1_1_UART_TX_CHARACTERIZATION.md>) — `agent_docs/stages/J14/J14_A1_1_UART_TX_CHARACTERIZATION.md`
+- [J14-A1.2 RX Single-Read Long-Tail Attribution](<../../agent_docs/stages/J14/J14_A1_2_RX_SINGLE_READ_ATTRIBUTION.md>) — `agent_docs/stages/J14/J14_A1_2_RX_SINGLE_READ_ATTRIBUTION.md`
+- [J14-A1.3 Recoverable Communication Timeout Handling](<../../agent_docs/stages/J14/J14_A1_3_COMMUNICATION_RECOVERY.md>) — `agent_docs/stages/J14/J14_A1_3_COMMUNICATION_RECOVERY.md`
+- [J14-A1.4 Post-Pause Fresh-State Recovery](<../../agent_docs/stages/J14/J14_A1_4_POST_PAUSE_FRESH_STATE.md>) — `agent_docs/stages/J14/J14_A1_4_POST_PAUSE_FRESH_STATE.md`
+- [J14-A1.5 Safe Re-anchor & Servo Resume Qualification](<../../agent_docs/stages/J14/J14_A1_5_SAFE_REANCHOR_STATIC_RESUME.md>) — `agent_docs/stages/J14/J14_A1_5_SAFE_REANCHOR_STATIC_RESUME.md`
+- [J14-A1.6 TX Long-Tail Root-Cause Capture](<../../agent_docs/stages/J14/J14_A1_6_TX_LONG_TAIL_CAPTURE.md>) — `agent_docs/stages/J14/J14_A1_6_TX_LONG_TAIL_CAPTURE.md`
+- [J14-A1.7 Low-Intrusion Natural Timeout Capture](<../../agent_docs/stages/J14/J14_A1_7_LOW_INTRUSION_TIMEOUT_CAPTURE.md>) — `agent_docs/stages/J14/J14_A1_7_LOW_INTRUSION_TIMEOUT_CAPTURE.md`
+- [J14-A1.8 Servo UART Process-Local Isolation](<../../agent_docs/stages/J14/J14_A1_8_SERVO_UART_WORKLOAD_ISOLATION.md>) — `agent_docs/stages/J14/J14_A1_8_SERVO_UART_WORKLOAD_ISOLATION.md`
+- [J14-A1.9 pre-implementation architecture audit](<../../agent_docs/stages/J14/J14_A1_9_DESIGN_AUDIT.md>) — `agent_docs/stages/J14/J14_A1_9_DESIGN_AUDIT.md`
+- [J14-A1.9 Servo UART Separate-Process Minimal A/B](<../../agent_docs/stages/J14/J14_A1_9_SEPARATE_PROCESS_MINIMAL_AB.md>) — `agent_docs/stages/J14/J14_A1_9_SEPARATE_PROCESS_MINIMAL_AB.md`
+- [J14-A1 UART TX Bounded-Write：软件通过，实机验收未通过](<../../agent_docs/stages/J14/J14_A1_UART_TX_BOUNDED_WRITE.md>) — `agent_docs/stages/J14/J14_A1_UART_TX_BOUNDED_WRITE.md`
+- [J14-A2-P1 pre-implementation design audit](<../../agent_docs/stages/J14/J14_A2_P1_DESIGN_AUDIT.md>) — `agent_docs/stages/J14/J14_A2_P1_DESIGN_AUDIT.md`
+- [J14-A2-P1 Three-Process Architecture Productionization](<../../agent_docs/stages/J14/J14_A2_P1_PRODUCTIONIZATION.md>) — `agent_docs/stages/J14/J14_A2_P1_PRODUCTIONIZATION.md`
+- [J14-A2-Q1F minimum change plan](<../../agent_docs/stages/J14/J14_A2_Q1F_MINIMAL_CHANGE_PLAN.md>) — `agent_docs/stages/J14/J14_A2_Q1F_MINIMAL_CHANGE_PLAN.md`
+- [J14-A2-Q1F TX Queue Diagnostics Hot-Path Isolation](<../../agent_docs/stages/J14/J14_A2_Q1F_TX_QUEUE_DIAGNOSTICS_ISOLATION.md>) — `agent_docs/stages/J14/J14_A2_Q1F_TX_QUEUE_DIAGNOSTICS_ISOLATION.md`
+- [J14-A2-Q3J Parent Active-Command Runtime Starvation Fix](<../../agent_docs/stages/J14/J14_A2_Q3J_PARENT_ACTIVE_COMMAND_STARVATION_FIX.md>) — `agent_docs/stages/J14/J14_A2_Q3J_PARENT_ACTIVE_COMMAND_STARVATION_FIX.md`
+- [J14-A-Demo-F1 design and evidence boundaries](<../../agent_docs/stages/J14/J14_A_DEMO_F1_DESIGN_AUDIT.md>) — `agent_docs/stages/J14/J14_A_DEMO_F1_DESIGN_AUDIT.md`
+- [J14-A-Demo source audit](<../../agent_docs/stages/J14/J14_A_DEMO_SOURCE_AUDIT.md>) — `agent_docs/stages/J14/J14_A_DEMO_SOURCE_AUDIT.md`
+- [J14-A-Demo-F1：正常 Ctrl+C 回 HOME 与干净退出](<../../agent_docs/stages/J14/J14_DEMO_F1_HOME_SHUTDOWN.md>) — `agent_docs/stages/J14/J14_DEMO_F1_HOME_SHUTDOWN.md`
+- [J14-A Final Handoff](<../../agent_docs/stages/J14/J14_FINAL_HANDOFF.md>) — `agent_docs/stages/J14/J14_FINAL_HANDOFF.md`
+- [J14 Final Summary](<../../agent_docs/stages/J14/J14_FINAL_SUMMARY.md>) — `agent_docs/stages/J14/J14_FINAL_SUMMARY.md`
+- [J14-A to Next Stage Engineering Handoff Specification](<../../agent_docs/stages/J14/J14_TO_NEXT_STAGE_HANDOFF.md>) — `agent_docs/stages/J14/J14_TO_NEXT_STAGE_HANDOFF.md`
+- [Stage J2-A — ROS2 正式 Driver 六机真实 UART 纯只读实机验证方案](<../../agent_docs/stages/J2/J2-A_ROS2_READONLY_REAL_HARDWARE_PLAN.md>) — `agent_docs/stages/J2/J2-A_ROS2_READONLY_REAL_HARDWARE_PLAN.md`
+- [J2-B2 ROS2 Single-Motor Position-Tracking Plan](<../../agent_docs/stages/J2/J2-B2_ROS2_SINGLE_MOTOR_POSITION_TRACKING_PLAN.md>) — `agent_docs/stages/J2/J2-B2_ROS2_SINGLE_MOTOR_POSITION_TRACKING_PLAN.md`
+- [J2-B ROS2 Single-Motor Real-Hardware Plan](<../../agent_docs/stages/J2/J2-B_ROS2_SINGLE_MOTOR_REAL_HARDWARE_PLAN.md>) — `agent_docs/stages/J2/J2-B_ROS2_SINGLE_MOTOR_REAL_HARDWARE_PLAN.md`
+- [J2-C ROS2 Six-Axis Vector Real-Hardware Plan](<../../agent_docs/stages/J2/J2-C_ROS2_SIX_AXIS_VECTOR_REAL_HARDWARE_PLAN.md>) — `agent_docs/stages/J2/J2-C_ROS2_SIX_AXIS_VECTOR_REAL_HARDWARE_PLAN.md`
+- [Stage J2-F0 — ROS 2 + UART 六机 READ_ONLY 实时通信能力表征方案 (Rev 2.1.1)](<../../agent_docs/stages/J2/J2-F0_ROS2_READONLY_COMMUNICATION_PERFORMANCE_PLAN.md>) — `agent_docs/stages/J2/J2-F0_ROS2_READONLY_COMMUNICATION_PERFORMANCE_PLAN.md`
+- [J3: 6PUS 逆运动学 (IK) 与真实六轴驱动集成方案](<../../agent_docs/stages/J3/J3_IK_REAL_HARDWARE_INTEGRATION_PLAN.md>) — `agent_docs/stages/J3/J3_IK_REAL_HARDWARE_INTEGRATION_PLAN.md`
+- [J4: ROS2 连续笛卡尔控制管线架构与验证方案](<../../agent_docs/stages/J4/J4_ROS2_CONTINUOUS_CARTESIAN_CONTROL_PLAN.md>) — `agent_docs/stages/J4/J4_ROS2_CONTINUOUS_CARTESIAN_CONTROL_PLAN.md`
+- [J5-C2-HW 装配后验收工具链（装配前准备）](<../../agent_docs/stages/J5/J5_C2_HW_ACCEPTANCE_TOOLCHAIN.md>) — `agent_docs/stages/J5/J5_C2_HW_ACCEPTANCE_TOOLCHAIN.md`
+- [J5 教程逐章执行性与代码一致性审计报告 (J5 Tutorial Execution Audit Report)](<../../agent_docs/stages/J5/J5_TUTORIAL_EXECUTION_AUDIT.md>) — `agent_docs/stages/J5/J5_TUTORIAL_EXECUTION_AUDIT.md`
+- [J5 USB 拓扑变更验证报告](<../../agent_docs/stages/J5/J5_USB_TOPOLOGY_CHANGE_VERIFICATION.md>) — `agent_docs/stages/J5/J5_USB_TOPOLOGY_CHANGE_VERIFICATION.md`
+- [J5 USB 拓扑恢复报告：Base H30 时间戳输出](<../../agent_docs/stages/J5/J5_USB_TOPOLOGY_RECOVERY.md>) — `agent_docs/stages/J5/J5_USB_TOPOLOGY_RECOVERY.md`
+- [6PUS 并联手术机器人装配后阶段化调试与验收方案 (Post-Assembly Commissioning Plan)](<../../agent_docs/stages/J6/6PUS_POST_ASSEMBLY_COMMISSIONING_PLAN.md>) — `agent_docs/stages/J6/6PUS_POST_ASSEMBLY_COMMISSIONING_PLAN.md`
+- [J6 Post-Assembly Commissioning Log](<../../agent_docs/stages/J6/J6_COMMISSIONING_LOG_TEMPLATE.md>) — `agent_docs/stages/J6/J6_COMMISSIONING_LOG_TEMPLATE.md`
+- [J6 Phase Gate Checklist](<../../agent_docs/stages/J6/J6_PHASE_GATE_CHECKLIST.md>) — `agent_docs/stages/J6/J6_PHASE_GATE_CHECKLIST.md`
+- [J6 Pre-Assembly Preparation Summary](<../../agent_docs/stages/J6/J6_PRE_ASSEMBLY_PREPARATION_SUMMARY.md>) — `agent_docs/stages/J6/J6_PRE_ASSEMBLY_PREPARATION_SUMMARY.md`
+- [J6 Release Notes](<../../agent_docs/stages/J6/J6_RELEASE_NOTES.md>) — `agent_docs/stages/J6/J6_RELEASE_NOTES.md`
+- [J6 Unified Test Report Schema](<../../agent_docs/stages/J6/J6_TEST_REPORT_SCHEMA.md>) — `agent_docs/stages/J6/J6_TEST_REPORT_SCHEMA.md`
+- [J6 装配前准备工作详细说明](<../../agent_docs/stages/J6/J6_装配前准备工作详细说明.md>) — `agent_docs/stages/J6/J6_装配前准备工作详细说明.md`
+- [J9 IMU Integration & Measurement Qualification](<../../agent_docs/stages/J9/J9_FINAL_SUMMARY.md>) — `agent_docs/stages/J9/J9_FINAL_SUMMARY.md`
+- [J9 -> J10 Handoff](<../../agent_docs/stages/J9/J9_TO_J10_HANDOFF.md>) — `agent_docs/stages/J9/J9_TO_J10_HANDOFF.md`
+- [TDE Adaptive Robust Controller 的真实系统约束](<../../agent_docs/stewart_TDE_reference_package/12_research_context/controller_migration_constraints.md>) — `agent_docs/stewart_TDE_reference_package/12_research_context/controller_migration_constraints.md`
+- [当前真实控制架构：面向算法设计](<../../agent_docs/stewart_TDE_reference_package/12_research_context/current_control_architecture_for_algorithm_design.md>) — `agent_docs/stewart_TDE_reference_package/12_research_context/current_control_architecture_for_algorithm_design.md`
+- [Frozen、Qualified 与当前开发边界](<../../agent_docs/stewart_TDE_reference_package/12_research_context/frozen_and_active_baseline_status.md>) — `agent_docs/stewart_TDE_reference_package/12_research_context/frozen_and_active_baseline_status.md`
+- [当前研究目标](<../../agent_docs/stewart_TDE_reference_package/12_research_context/research_state_summary.md>) — `agent_docs/stewart_TDE_reference_package/12_research_context/research_state_summary.md`
+
+## 迁入 docs 的正文
+
+- [Bone Drill / 6PUS ROS2 正式工程目录与迁移实施方案](<../../docs/archive/inherited/architecture/BONE_WS_ROS2_ARCHITECTURE_PLAN.md>) — `docs/archive/inherited/architecture/BONE_WS_ROS2_ARCHITECTURE_PLAN.md`；原 `agent_docs/architecture/BONE_WS_ROS2_ARCHITECTURE_PLAN.md`
+- [6PUS 并联机器人实机操作与命令速查指南 (Real Hardware Operation Guide)](<../../docs/archive/inherited/archive/6PUS_REAL_HARDWARE_OPERATION_GUIDE_LEGACY.md>) — `docs/archive/inherited/archive/6PUS_REAL_HARDWARE_OPERATION_GUIDE_LEGACY.md`；原 `agent_docs/archive/6PUS_REAL_HARDWARE_OPERATION_GUIDE_LEGACY.md`
+- [1. 审计范围与当前版本](<../../docs/archive/inherited/audits/stewart_migration_nuc_audit.md>) — `docs/archive/inherited/audits/stewart_migration_nuc_audit.md`；原 `agent_docs/audits/stewart_migration_nuc_audit.md`
+- [第四阶段 B1：透明串口观测层（离线）](<../../docs/archive/inherited/research/6PUS_DYNAMIC_ID_B1_SERIAL_OBSERVER.md>) — `docs/archive/inherited/research/6PUS_DYNAMIC_ID_B1_SERIAL_OBSERVER.md`；原 `agent_docs/research/6PUS_DYNAMIC_ID_B1_SERIAL_OBSERVER.md`
+- [第四阶段 B2：J14 串口观测独立工厂](<../../docs/archive/inherited/research/6PUS_DYNAMIC_ID_B2_J14_SERIAL_FACTORY.md>) — `docs/archive/inherited/research/6PUS_DYNAMIC_ID_B2_J14_SERIAL_FACTORY.md`；原 `agent_docs/research/6PUS_DYNAMIC_ID_B2_J14_SERIAL_FACTORY.md`
+- [第四阶段 B3：命令—串口—反馈事件关联（离线）](<../../docs/archive/inherited/research/6PUS_DYNAMIC_ID_B3_EVENT_CHAIN.md>) — `docs/archive/inherited/research/6PUS_DYNAMIC_ID_B3_EVENT_CHAIN.md`；原 `agent_docs/research/6PUS_DYNAMIC_ID_B3_EVENT_CHAIN.md`
+- [第四阶段 B4：诊断组件集成与软件压力验证](<../../docs/archive/inherited/research/6PUS_DYNAMIC_ID_B4_INTEGRATION.md>) — `docs/archive/inherited/research/6PUS_DYNAMIC_ID_B4_INTEGRATION.md`；原 `agent_docs/research/6PUS_DYNAMIC_ID_B4_INTEGRATION.md`
+- [6PUS SCI 3DOF Feasibility Pre-Study](<../../docs/archive/inherited/research/6PUS_SCI_3DOF_Feasibility_PreStudy.md>) — `docs/archive/inherited/research/6PUS_SCI_3DOF_Feasibility_PreStudy.md`；原 `agent_docs/research/6PUS_SCI_3DOF_Feasibility_PreStudy.md`
+- [6PUS SCI Delay Feasibility Audit](<../../docs/archive/inherited/research/6PUS_SCI_Delay_Feasibility_Audit.md>) — `docs/archive/inherited/research/6PUS_SCI_Delay_Feasibility_Audit.md`；原 `agent_docs/research/6PUS_SCI_Delay_Feasibility_Audit.md`
+- [6PUS博士课题SCI论文：第一轮文献检索与创新性调查](<../../docs/archive/inherited/research/6PUS_SCI_PreStudy_Input/6PUS_SCI_Literature_Review_Round1.md>) — `docs/archive/inherited/research/6PUS_SCI_PreStudy_Input/6PUS_SCI_Literature_Review_Round1.md`；原 `agent_docs/research/6PUS_SCI_PreStudy_Input/6PUS_SCI_Literature_Review_Round1.md`
+- [6PUS SCI Literature Review Round 2](<../../docs/archive/inherited/research/6PUS_SCI_PreStudy_Input/6PUS_SCI_Literature_Review_Round2.md>) — `docs/archive/inherited/research/6PUS_SCI_PreStudy_Input/6PUS_SCI_Literature_Review_Round2.md`；原 `agent_docs/research/6PUS_SCI_PreStudy_Input/6PUS_SCI_Literature_Review_Round2.md`
+- [J14 Demo operation guide](<../../docs/archive/position_reference/J14_DEMO_ENTRYPOINTS.md>) — `docs/archive/position_reference/J14_DEMO_ENTRYPOINTS.md`；原 `docs/J14_DEMO_ENTRYPOINTS.md`
+- [J14 production driver operation](<../../docs/archive/position_reference/J14_PRODUCTION_DRIVER.md>) — `docs/archive/position_reference/J14_PRODUCTION_DRIVER.md`；原 `docs/J14_PRODUCTION_DRIVER.md`
+- [拆卸后电缸逐轴归零：真实执行记录（2026-11-05）](<../../docs/experiments/native_motor/detached_axis_zero_20261105.md>) — `docs/experiments/native_motor/detached_axis_zero_20261105.md`；原 `docs/detached_axis_zero_20261105.md`
+- [Force 三轴姿态主动稳定：Position PID 迁移版](<../../docs/archive/force_history/force_active_stabilization.md>) — `docs/archive/force_history/force_active_stabilization.md`；原 `docs/force_active_stabilization.md`
+- [6PUS Force Control 第一阶段](<../../docs/archive/force_stages/force_control_stage1.md>) — `docs/archive/force_stages/force_control_stage1.md`；原 `docs/force_control_stage1.md`
+- [6PUS Force Control 第二阶段（历史功能说明）](<../../docs/archive/force_stages/force_control_stage2.md>) — `docs/archive/force_stages/force_control_stage2.md`；原 `docs/force_control_stage2.md`
+- [Stage 2.1：六轴真实力反馈数据链](<../../docs/archive/force_stages/force_control_stage2_1.md>) — `docs/archive/force_stages/force_control_stage2_1.md`；原 `docs/force_control_stage2_1.md`
+- [Stage 3A：电机原生力控执行链（Mode 3 / 0x27 目标力写入）](<../../docs/archive/force_stages/force_control_stage3a.md>) — `docs/archive/force_stages/force_control_stage3a.md`；原 `docs/force_control_stage3a.md`
+- [Stage 3B-1.1：力控模式安全交接机制实施报告](<../../docs/archive/force_stages/force_control_stage3b1_1_safety_handover.md>) — `docs/archive/force_stages/force_control_stage3b1_1_safety_handover.md`；原 `docs/force_control_stage3b1_1_safety_handover.md`
+- [Stage 3B-1.2：当前承载力交接与部分切换失败恢复](<../../docs/archive/force_stages/force_control_stage3b1_2_handover_recovery.md>) — `docs/archive/force_stages/force_control_stage3b1_2_handover_recovery.md`；原 `docs/force_control_stage3b1_2_handover_recovery.md`
+- [Stage 3B-1：Mode 3 切换前准备与静态力基线](<../../docs/archive/force_stages/force_control_stage3b1_preparation.md>) — `docs/archive/force_stages/force_control_stage3b1_preparation.md`；原 `docs/force_control_stage3b1_preparation.md`
+- [Stage 3B-3：六轴装配参考 Tare、Mode 3 静态保持与退出](<../../docs/archive/force_stages/force_control_stage3b3_six_axis_tare.md>) — `docs/archive/force_stages/force_control_stage3b3_six_axis_tare.md`；原 `docs/force_control_stage3b3_six_axis_tare.md`
+- [Stage 3C.1：Tare核实及分级力响应实验](<../../docs/archive/force_stages/force_control_stage3c1_force_response.md>) — `docs/archive/force_stages/force_control_stage3c1_force_response.md`；原 `docs/force_control_stage3c1_force_response.md`
+- [Stage 3C.2：六轴 Mode 3 当前实测保持力交接](<../../docs/archive/force_stages/force_control_stage3c2_force_handover.md>) — `docs/archive/force_stages/force_control_stage3c2_force_handover.md`；原 `docs/force_control_stage3c2_force_handover.md`
+- [Stage 3C.3：六轴 Z 轴 ±5 N 增量力响应](<../../docs/archive/force_stages/force_control_stage3c3_z_force_response.md>) — `docs/archive/force_stages/force_control_stage3c3_z_force_response.md`；原 `docs/force_control_stage3c3_z_force_response.md`
+- [Stage 3C.4：任务空间力控链分析与最小修正](<../../docs/archive/force_stages/force_control_stage3c4_control_chain_analysis.md>) — `docs/archive/force_stages/force_control_stage3c4_control_chain_analysis.md`；原 `docs/force_control_stage3c4_control_chain_analysis.md`
+- [Stage 3C：六轴真实 Z 轴小力 PID 响应实验](<../../docs/archive/force_stages/force_control_stage3c_z_force_tracking.md>) — `docs/archive/force_stages/force_control_stage3c_z_force_tracking.md`；原 `docs/force_control_stage3c_z_force_tracking.md`
+- [Force Stage 4：六轴 Mode 3 三轴主动稳定真机实验](<../../docs/archive/force_stages/force_control_stage4_active_stabilization.md>) — `docs/archive/force_stages/force_control_stage4_active_stabilization.md`；原 `docs/force_control_stage4_active_stabilization.md`
+- [Stage 4 主动稳定失败：真实时序重放、原因与修正](<../../docs/archive/force_stages/force_control_stage4_chain_analysis.md>) — `docs/archive/force_stages/force_control_stage4_chain_analysis.md`；原 `docs/force_control_stage4_chain_analysis.md`
+- [Stage 5：Mode 3 下的六轴位置反馈执行层](<../../docs/archive/force_stages/force_control_stage5_joint_position_force.md>) — `docs/archive/force_stages/force_control_stage5_joint_position_force.md`；原 `docs/force_control_stage5_joint_position_force.md`
+- [Stage 5 V2：Mode 3 位置跟踪、制动与故障退出问题](<../../docs/archive/force_stages/force_control_stage5_v2_position_tracking.md>) — `docs/archive/force_stages/force_control_stage5_v2_position_tracking.md`；原 `docs/force_control_stage5_v2_position_tracking.md`
+- [手动柔顺恢复：端点反馈与 Mode 3 交接](<../../docs/operations/manual_recovery.md>) — `docs/operations/manual_recovery.md`；原 `docs/force_manual_recovery.md`
+- [Force Stage 2：V2 六轴 Mode 3 手动恢复真实实验](<../../docs/archive/force_history/force_manual_recovery_stage2_experiment.md>) — `docs/archive/force_history/force_manual_recovery_stage2_experiment.md`；原 `docs/force_manual_recovery_stage2_experiment.md`
+- [手动柔顺恢复第二轮修正（2026-11-05，离线）](<../../docs/archive/force_history/force_manual_recovery_v2.md>) — `docs/archive/force_history/force_manual_recovery_v2.md`；原 `docs/force_manual_recovery_v2.md`
+- [Force 控制退出修复与手动恢复](<../../docs/operations/force_shutdown_history.md>) — `docs/operations/force_shutdown_history.md`；原 `docs/force_safety_recovery.md`
+- [Force 混合单位架构与参数迁移](<../../docs/archive/force_history/force_units.md>) — `docs/archive/force_history/force_units.md`；原 `docs/force_units.md`
+- [J11 最终控制方案对比](<../../docs/archive/position_reference/j11/J11_FINAL_CONTROL_COMPARISON.md>) — `docs/archive/position_reference/j11/J11_FINAL_CONTROL_COMPARISON.md`；原 `docs/j11/J11_FINAL_CONTROL_COMPARISON.md`
+- [J14 三种主动姿态防抖 Demo 正式操作指南](<../../docs/archive/position_reference/j14/J14_DEMO_ENTRYPOINTS.md>) — `docs/archive/position_reference/j14/J14_DEMO_ENTRYPOINTS.md`；原 `docs/j14/J14_DEMO_ENTRYPOINTS.md`
+- [J14 production driver operation](<../../docs/archive/position_reference/j14/J14_PRODUCTION_DRIVER.md>) — `docs/archive/position_reference/j14/J14_PRODUCTION_DRIVER.md`；原 `docs/j14/J14_PRODUCTION_DRIVER.md`
+- [Mode 3 六自由度组合轨迹运行说明](<../../docs/experiments/motion/mode3_combined_pose_motion.md>) — `docs/experiments/motion/mode3_combined_pose_motion.md`；原 `docs/mode3_combined_pose_motion.md`
+- [双 IMU → SO(3)/LADRC → 原生 Mode 3 位置闭环](<../../docs/archive/force_history/mode3_dual_imu.md>) — `docs/archive/force_history/mode3_dual_imu.md`；原 `docs/mode3_dual_imu.md`
+- [双 IMU Roll/Pitch 实验故障分析：2026-11-06 16:15](<../../docs/experiments/faults/mode3_dual_imu_fault_20261106_161531.md>) — `docs/experiments/faults/mode3_dual_imu_fault_20261106_161531.md`；原 `docs/mode3_dual_imu_fault_20261106_161531.md`
+- [三轴双 IMU Mode 3 实验：2026-11-07 11:20 故障分析](<../../docs/experiments/faults/mode3_dual_imu_fault_20261107_112026.md>) — `docs/experiments/faults/mode3_dual_imu_fault_20261107_112026.md`；原 `docs/mode3_dual_imu_fault_20261107_112026.md`
+- [双 IMU 原生 Mode 3：位置 PI-D 动态响应优化](<../../docs/archive/force_history/mode3_dual_imu_pid_dynamics_20261106.md>) — `docs/archive/force_history/mode3_dual_imu_pid_dynamics_20261106.md`；原 `docs/mode3_dual_imu_pid_dynamics_20261106.md`
+- [原生 Mode 3 三轴大幅组合主动稳定：运行准备](<../../docs/archive/force_history/mode3_dual_imu_three_axis_workspace_20261106.md>) — `docs/archive/force_history/mode3_dual_imu_three_axis_workspace_20261106.md`；原 `docs/mode3_dual_imu_three_axis_workspace_20261106.md`
+- [Mode 3 双 IMU：J14 三进程运行入口](<../../docs/archive/force_history/three_process_migration_20261107.md>) — `docs/archive/force_history/three_process_migration_20261107.md`；原 `docs/mode3_dual_imu_three_process.md`
+- [6PUS 原生 Mode 3：五个单轴真机实验结果（2026-11-06）](<../../docs/experiments/motion/mode3_five_axis_results_20261106.md>) — `docs/experiments/motion/mode3_five_axis_results_20261106.md`；原 `docs/mode3_five_axis_results_20261106.md`
+- [双 IMU 三进程：原生能力输出策略](<../../docs/control/native_capacity.md>) — `docs/control/native_capacity.md`；原 `docs/mode3_process_native_capacity.md`
+- [2026-11-06：10 mm 上升后顶部保持超时分析与最小修正](<../../docs/experiments/motion/mode3_z_position_hold_analysis_20261106.md>) — `docs/experiments/motion/mode3_z_position_hold_analysis_20261106.md`；原 `docs/mode3_z_position_hold_analysis_20261106.md`
+- [Mode 3 六轴位置闭环：Z 上升 10 mm、保持、返回](<../../docs/experiments/motion/mode3_z_position_motion.md>) — `docs/experiments/motion/mode3_z_position_motion.md`；原 `docs/mode3_z_position_motion.md`
+- [6PUS 骨钻主动稳定：DS-SCTDE 离线实现](<../../docs/archive/research/6PUS_DS_SCTDE_OFFLINE_RESEARCH.md>) — `docs/archive/research/6PUS_DS_SCTDE_OFFLINE_RESEARCH.md`；原 `docs/research/6PUS_DS_SCTDE_OFFLINE_RESEARCH.md`
+- [6PUS 参数与信号证据清单](<../../docs/archive/research/6PUS_DS_SCTDE_PARAMETER_AND_SIGNAL_INVENTORY.md>) — `docs/archive/research/6PUS_DS_SCTDE_PARAMETER_AND_SIGNAL_INVENTORY.md`；原 `docs/research/6PUS_DS_SCTDE_PARAMETER_AND_SIGNAL_INVENTORY.md`
+- [6PUS 骨钻主动稳定：机构几何与 TDE 可实现性](<../../docs/archive/research/6PUS_DS_SCTDE_REALISTIC_MODEL_AND_TDE_FEASIBILITY.md>) — `docs/archive/research/6PUS_DS_SCTDE_REALISTIC_MODEL_AND_TDE_FEASIBILITY.md`；原 `docs/research/6PUS_DS_SCTDE_REALISTIC_MODEL_AND_TDE_FEASIBILITY.md`
+- [独立位置伺服外部力反馈入口](<../../docs/archive/research/6PUS_FORCE_POSITION_HARDWARE.md>) — `docs/archive/research/6PUS_FORCE_POSITION_HARDWARE.md`；原 `docs/research/6PUS_FORCE_POSITION_HARDWARE.md`
+- [6PUS 双 IMU、力与力矩研究链](<../../docs/archive/research/6PUS_FORCE_TORQUE_ROS_RESEARCH.md>) — `docs/archive/research/6PUS_FORCE_TORQUE_ROS_RESEARCH.md`；原 `docs/research/6PUS_FORCE_TORQUE_ROS_RESEARCH.md`
+- [6PUS 关节位置误差到电机力矩：离线研究状态](<../../docs/archive/research/6PUS_JOINT_TORQUE_PID_RESEARCH.md>) — `docs/archive/research/6PUS_JOINT_TORQUE_PID_RESEARCH.md`；原 `docs/research/6PUS_JOINT_TORQUE_PID_RESEARCH.md`
+- [6PUS 三轴姿态轨迹离线扫描](<../../docs/archive/research/6PUS_OFFLINE_POSE_TRAJECTORIES.md>) — `docs/archive/research/6PUS_OFFLINE_POSE_TRAJECTORIES.md`；原 `docs/research/6PUS_OFFLINE_POSE_TRAJECTORIES.md`
+- [6PUS 骨钻主动稳定：TDE 与积分的闭环研究](<../../docs/archive/research/6PUS_TDE_CLOSED_LOOP_RESEARCH.md>) — `docs/archive/research/6PUS_TDE_CLOSED_LOOP_RESEARCH.md`；原 `docs/research/6PUS_TDE_CLOSED_LOOP_RESEARCH.md`
+- [电机力矩前馈 + PID：离线加法原型及部署缺口](<../../docs/archive/research/6PUS_TORQUE_FF_PID_STATUS.md>) — `docs/archive/research/6PUS_TORQUE_FF_PID_STATUS.md`；原 `docs/research/6PUS_TORQUE_FF_PID_STATUS.md`
+- [HOME 静止基线采集：未开始](<../../docs/archive/research/aux_translation_baseline/20261025_123525_704146.md>) — `docs/archive/research/aux_translation_baseline/20261025_123525_704146.md`；原 `docs/research/aux_translation_baseline/20261025_123525_704146.md`
+- [辅助平移激励：独立离线工具 v1](<../../docs/archive/research/aux_translation_offline_v1/README.md>) — `docs/archive/research/aux_translation_offline_v1/README.md`；原 `docs/research/aux_translation_offline_v1/README.md`
+- [辅助平移离线激励可观测性分析](<../../docs/archive/research/aux_translation_offline_v1/observability_20261025_01.md>) — `docs/archive/research/aux_translation_offline_v1/observability_20261025_01.md`；原 `docs/research/aux_translation_offline_v1/observability_20261025_01.md`
+- [辅助平移离线实验准备：2026-10-25](<../../docs/archive/research/aux_translation_offline_v1/preparation_20261025_01.md>) — `docs/archive/research/aux_translation_offline_v1/preparation_20261025_01.md`；原 `docs/research/aux_translation_offline_v1/preparation_20261025_01.md`
+- [单电机原生力控与传感器清零实验](<../../docs/experiments/native_motor/single_motor_force_control_experiment.md>) — `docs/experiments/native_motor/single_motor_force_control_experiment.md`；原 `docs/single_motor_force_control_experiment.md`
+- [Force 单电机深度实验 V2](<../../docs/experiments/native_motor/single_motor_force_control_experiment_v2.md>) — `docs/experiments/native_motor/single_motor_force_control_experiment_v2.md`；原 `docs/single_motor_force_control_experiment_v2.md`
+- [6PUS 并联手术机器人 ROS 2 项目全栈源码教学与系统解析教程](<../../docs/archive/position_reference/整体学习参考/6PUS_ROS2_CODE_LEARNING_TUTORIAL.md>) — `docs/archive/position_reference/整体学习参考/6PUS_ROS2_CODE_LEARNING_TUTORIAL.md`；原 `docs/整体学习参考/6PUS_ROS2_CODE_LEARNING_TUTORIAL.md`
+- [6PUS 并联机器人日常实机操作指南 (Servo Operation Guide)](<../../docs/archive/position_reference/整体学习参考/6PUS_SERVO_OPERATION_GUIDE.md>) — `docs/archive/position_reference/整体学习参考/6PUS_SERVO_OPERATION_GUIDE.md`；原 `docs/整体学习参考/6PUS_SERVO_OPERATION_GUIDE.md`
+- [Modbus RTU 入门教程：从 USB-TTL 到 RS485 多电机控制](<../../docs/archive/hardware_reference/ModbusRTU入门教程-从USB-TTL到RS485多电机控制.md>) — `docs/archive/hardware_reference/ModbusRTU入门教程-从USB-TTL到RS485多电机控制.md`；原 `hardware/tempp/ModbusRTU入门教程-从USB-TTL到RS485多电机控制.md`
+- [因时微型伺服电缸 Modbus RTU 多电机控制方案](<../../docs/archive/hardware_reference/因时电机ModbusRTU多电机控制方案.md>) — `docs/archive/hardware_reference/因时电机ModbusRTU多电机控制方案.md`；原 `hardware/tempp/因时电机ModbusRTU多电机控制方案.md`
+- [ID4-OFFSET 固定零偏表征方案](<../../docs/archive/uart_history/ID4-OFFSET固定零偏表征方案.md>) — `docs/archive/uart_history/ID4-OFFSET固定零偏表征方案.md`；原 `up/motor/uart_multi/ID4-OFFSET固定零偏表征方案.md`
+- [ID4 近零端边界恢复与保护方案](<../../docs/archive/uart_history/ID4上电恢复初始化方案.md>) — `docs/archive/uart_history/ID4上电恢复初始化方案.md`；原 `up/motor/uart_multi/ID4上电恢复初始化方案.md`
+- [M2-CAL 位置校准验证方案](<../../docs/archive/uart_history/M2-CAL位置校准方案.md>) — `docs/archive/uart_history/M2-CAL位置校准方案.md`；原 `up/motor/uart_multi/M2-CAL位置校准方案.md`
+- [6PUS 六电机 UART 编号与联调方案](<../../docs/archive/uart_history/UART六电机编号与测试方案.md>) — `docs/archive/uart_history/UART六电机编号与测试方案.md`；原 `up/motor/uart_multi/UART六电机编号与测试方案.md`
+- [LAF 力传感器 UART 基线核对](<../../docs/archive/uart_history/UART力基线核对.md>) — `docs/archive/uart_history/UART力基线核对.md`；原 `up/motor/uart_multi/UART力基线核对.md`
+- [UART 实机运行记录](<../../docs/archive/uart_history/UART实机运行记录.md>) — `docs/archive/uart_history/UART实机运行记录.md`；原 `up/motor/uart_multi/UART实机运行记录.md`
+
+## 原位保留：冻结资产
+
+- [J4 ROS 2 连续笛卡尔控制管线最终冻结报告 (J4 Final Summary & Freeze Document)](<../../agent_docs/frozen/J4_FINAL_SUMMARY.md>) — `agent_docs/frozen/J4_FINAL_SUMMARY.md`
+- [J5-B3 双 IMU 相对姿态实时估计算法总结与冻结文档 (J5-B3 Final Summary)](<../../agent_docs/frozen/J5_B3_FINAL_SUMMARY.md>) — `agent_docs/frozen/J5_B3_FINAL_SUMMARY.md`
+- [J5-C2 最终总结与冻结记录](<../../agent_docs/frozen/J5_C2_FINAL_SUMMARY.md>) — `agent_docs/frozen/J5_C2_FINAL_SUMMARY.md`
+- [J5 装配前阶段最终测试与验收总报告 (J5 Final Test & Acceptance Report)](<../../agent_docs/frozen/J5_FINAL_TEST_REPORT.md>) — `agent_docs/frozen/J5_FINAL_TEST_REPORT.md`
+- [J5 最终冻结清单 (J5 Final Frozen Manifest)](<../../agent_docs/frozen/J5_FROZEN_MANIFEST.md>) — `agent_docs/frozen/J5_FROZEN_MANIFEST.md`
+- [6PUS 装配前最终软件 Baseline](<../../agent_docs/frozen/J5_PRE_ASSEMBLY_BASELINE.md>) — `agent_docs/frozen/J5_PRE_ASSEMBLY_BASELINE.md`
+- [J5 装配前阶段最终冻结版本发布总清单 (J5 Pre-Assembly Frozen Release v1.0)](<../../agent_docs/frozen/J5_PRE_ASSEMBLY_FROZEN_v1.0.md>) — `agent_docs/frozen/J5_PRE_ASSEMBLY_FROZEN_v1.0.md`
+- [J5 装配前阶段软件环境与硬件接口定义 (J5 Software Environment & Hardware Specification)](<../../agent_docs/frozen/J5_SOFTWARE_ENVIRONMENT.md>) — `agent_docs/frozen/J5_SOFTWARE_ENVIRONMENT.md`
+- [6PUS 并联手术机器人装配前文档与硬件可执行性总验收报告 (Pre-Assembly Document & Hardware Acceptance Report)](<../../agent_docs/frozen/PRE_ASSEMBLY_DOCUMENT_AND_HARDWARE_ACCEPTANCE.md>) — `agent_docs/frozen/PRE_ASSEMBLY_DOCUMENT_AND_HARDWARE_ACCEPTANCE.md`
+
+## 原位保留：实验、原始摘录与交付包
+
+- [Results & Experimental Evidence Index](<../../results/README.md>) — `results/README.md`
+- [J11-M1 Dataset Index](<../../results/j11/M1_DATASET_INDEX.md>) — `results/j11/M1_DATASET_INDEX.md`
+- [J11 One-Shot Runtime Validation: Static Home Hold Audit Report](<../../results/j11/runtime_validation/20260917_153556/STATIC_HOLD_VALIDATION_REPORT.md>) — `results/j11/runtime_validation/20260917_153556/STATIC_HOLD_VALIDATION_REPORT.md`
+- [J12 Large-Angle Overcurrent ID5 Forensic Report](<../../results/j12/analysis/overcurrent_165025/J12_LARGE_ANGLE_OVERCURRENT_ID5_FORENSIC_REPORT.md>) — `results/j12/analysis/overcurrent_165025/J12_LARGE_ANGLE_OVERCURRENT_ID5_FORENSIC_REPORT.md`
+- [J12-1 Large-Angle Static Load Boundary Qualification Report](<../../results/j12/j12_1_large_angle_static_load/20261005_104403/j12_1_static_load_plateau_report.md>) — `results/j12/j12_1_large_angle_static_load/20261005_104403/j12_1_static_load_plateau_report.md`
+- [J12-1 Large-Angle Static Load Boundary Qualification Report](<../../results/j12/j12_1_large_angle_static_load/20261005_110720/j12_1_static_load_plateau_report.md>) — `results/j12/j12_1_large_angle_static_load/20261005_110720/j12_1_static_load_plateau_report.md`
+- [J12-2 Combined Quasi-Static Attitude Screening Report](<../../results/j12/j12_2_combined_quasistatic/20261005_122117/j12_2_combined_screening_report.md>) — `results/j12/j12_2_combined_quasistatic/20261005_122117/j12_2_combined_screening_report.md`
+- [J12-3 Dynamic Fault Forensics & 500 mA Current Safety Gate Audit Report](<../../results/j12/j12_3_dynamic_performance/20261005_130946/j12_3_dynamic_fault_forensics_report.md>) — `results/j12/j12_3_dynamic_performance/20261005_130946/j12_3_dynamic_fault_forensics_report.md`
+- [J12-3 Small-Angle Dynamic Performance Report](<../../results/j12/j12_3_dynamic_performance/20261005_130946/j12_3_dynamic_performance_report.md>) — `results/j12/j12_3_dynamic_performance/20261005_130946/j12_3_dynamic_performance_report.md`
+- [J12-3 Dynamic Performance Characterization & Closure Audit Report](<../../results/j12/j12_3_dynamic_performance/20261005_152615/j12_3_dynamic_characterization_report.md>) — `results/j12/j12_3_dynamic_performance/20261005_152615/j12_3_dynamic_characterization_report.md`
+- [J12-3C PARK ↔ HOME Dynamic Current Characterization Report](<../../results/j12/j12_3c_current_characterization/20261005_144132/j12_3c_current_characterization_report.md>) — `results/j12/j12_3c_current_characterization/20261005_144132/j12_3c_current_characterization_report.md`
+- [J12-3C PARK ↔ HOME Dynamic Current Characterization Report](<../../results/j12/j12_3c_current_characterization/20261005_144435/j12_3c_current_characterization_report.md>) — `results/j12/j12_3c_current_characterization/20261005_144435/j12_3c_current_characterization_report.md`
+- [J12-3C PARK ↔ HOME Dynamic Current Characterization Report](<../../results/j12/j12_3c_current_characterization/20261005_144800/j12_3c_current_characterization_report.md>) — `results/j12/j12_3c_current_characterization/20261005_144800/j12_3c_current_characterization_report.md`
+- [J12 Frozen Benchmark Evidence Migration Record](<../../results/j12/j12_frozen_ab/MIGRATION_RECORD.md>) — `results/j12/j12_frozen_ab/MIGRATION_RECORD.md`
+- [J13 动平台偏心负载实验交接包 (Classical vs 3-axis LADRC)](<../../results/j13/J13_payload_AB_win_package_20261007/00_README.md>) — `results/j13/J13_payload_AB_win_package_20261007/00_README.md`
+- [J13 动平台偏心负载工况对比分析报告 (Classical vs 3-axis LADRC)](<../../results/j13/J13_payload_AB_win_package_20261007/01_report/J13_payload_AB_analysis.md>) — `results/j13/J13_payload_AB_win_package_20261007/01_report/J13_payload_AB_analysis.md`
+- [LADRC 控制器参数与状态变量技术说明](<../../results/j13/J13_payload_AB_win_package_20261007/01_report/controller_parameter_notes.md>) — `results/j13/J13_payload_AB_win_package_20261007/01_report/controller_parameter_notes.md`
+- [J13-E0 Runtime Archive Migration Record](<../../results/j13/j13_e0_runtime_archive/MIGRATION_RECORD.md>) — `results/j13/j13_e0_runtime_archive/MIGRATION_RECORD.md`
+- [Runtime Hardening Benchmark Evidence Migration Record](<../../results/j13/runtime_hardening/MIGRATION_RECORD.md>) — `results/j13/runtime_hardening/MIGRATION_RECORD.md`
+- [PID vs ADRC 实机数据：representative comparison](<../../results/j14/controller_compare/comparison/real_run_001/summary.md>) — `results/j14/controller_compare/comparison/real_run_001/summary.md`
+- [J14 Round 2 normalized disturbance rejection analysis](<../../results/j14/controller_compare/comparison/real_run_002/normalized_disturbance_summary.md>) — `results/j14/controller_compare/comparison/real_run_002/normalized_disturbance_summary.md`
+- [PID vs ADRC 第二轮实机记录：representative comparison](<../../results/j14/controller_compare/comparison/real_run_002/summary.md>) — `results/j14/controller_compare/comparison/real_run_002/summary.md`
+- [PID vs ADRC representative comparison](<../../results/j14/controller_compare/comparison/summary.md>) — `results/j14/controller_compare/comparison/summary.md`
+- [pus6_control: Control System Architecture for 6PUS Parallel Manipulator](<../../results/j14/j14_a2_q1f_software/before/bone_ws/src/pus6_control/README.md>) — `results/j14/j14_a2_q1f_software/before/bone_ws/src/pus6_control/README.md`
+- [J14-A2-P1 Three-Process Architecture Productionization](<../../results/j14/j14_a2_q1f_software/before/docs/J14_A2_P1_PRODUCTIONIZATION.md>) — `results/j14/j14_a2_q1f_software/before/docs/J14_A2_P1_PRODUCTIONIZATION.md`
+- [Blog Material Map](<../../results/j14_blog_prep/00_manifest/BLOG_MATERIAL_MAP.md>) — `results/j14_blog_prep/00_manifest/BLOG_MATERIAL_MAP.md`
+- [Excerpts](<../../results/j14_blog_prep/00_manifest/EXCERPT_INDEX.md>) — `results/j14_blog_prep/00_manifest/EXCERPT_INDEX.md`
+- [Figure Index](<../../results/j14_blog_prep/00_manifest/FIGURE_INDEX.md>) — `results/j14_blog_prep/00_manifest/FIGURE_INDEX.md`
+- [J14 Evidence Inventory](<../../results/j14_blog_prep/00_manifest/J14_EVIDENCE_INVENTORY.md>) — `results/j14_blog_prep/00_manifest/J14_EVIDENCE_INVENTORY.md`
+- [Final Quality Check](<../../results/j14_blog_prep/00_manifest/QUALITY_CHECK.md>) — `results/j14_blog_prep/00_manifest/QUALITY_CHECK.md`
+- [Source Index](<../../results/j14_blog_prep/00_manifest/SOURCE_INDEX.md>) — `results/j14_blog_prep/00_manifest/SOURCE_INDEX.md`
+- [Table Index](<../../results/j14_blog_prep/00_manifest/TABLE_INDEX.md>) — `results/j14_blog_prep/00_manifest/TABLE_INDEX.md`
+- [NUC → Mac Transfer](<../../results/j14_blog_prep/00_manifest/TRANSFER_README.md>) — `results/j14_blog_prep/00_manifest/TRANSFER_README.md`
+- [Existing report claim (L3, not numerical truth)](<../../results/j14_blog_prep/01_raw_refs/a1_13_report_claim_excerpt.md>) — `results/j14_blog_prep/01_raw_refs/a1_13_report_claim_excerpt.md`
+- [current_gate](<../../results/j14_blog_prep/01_raw_refs/code/current_gate.md>) — `results/j14_blog_prep/01_raw_refs/code/current_gate.md`
+- [latest_target](<../../results/j14_blog_prep/01_raw_refs/code/latest_target.md>) — `results/j14_blog_prep/01_raw_refs/code/latest_target.md`
+- [lease_sender](<../../results/j14_blog_prep/01_raw_refs/code/lease_sender.md>) — `results/j14_blog_prep/01_raw_refs/code/lease_sender.md`
+- [parent_lease](<../../results/j14_blog_prep/01_raw_refs/code/parent_lease.md>) — `results/j14_blog_prep/01_raw_refs/code/parent_lease.md`
+- [NUC Original Before: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_software/](<../../results/j14_blog_prep/01_raw_refs/code/q3j_executor.source.md>) — `results/j14_blog_prep/01_raw_refs/code/q3j_executor.source.md`
+- [queue_after_boundary](<../../results/j14_blog_prep/01_raw_refs/code/queue_after_boundary.md>) — `results/j14_blog_prep/01_raw_refs/code/queue_after_boundary.md`
+- [scheduler_deadline](<../../results/j14_blog_prep/01_raw_refs/code/scheduler_deadline.md>) — `results/j14_blog_prep/01_raw_refs/code/scheduler_deadline.md`
+- [startup_handshake](<../../results/j14_blog_prep/01_raw_refs/code/startup_handshake.md>) — `results/j14_blog_prep/01_raw_refs/code/startup_handshake.md`
+- [three_process_entry](<../../results/j14_blog_prep/01_raw_refs/code/three_process_entry.md>) — `results/j14_blog_prep/01_raw_refs/code/three_process_entry.md`
+- [tx_queue_gating](<../../results/j14_blog_prep/01_raw_refs/code/tx_queue_gating.md>) — `results/j14_blog_prep/01_raw_refs/code/tx_queue_gating.md`
+- [Source provenance](<../../results/j14_blog_prep/01_raw_refs/excerpt_a1_7_natural_timeout.source.md>) — `results/j14_blog_prep/01_raw_refs/excerpt_a1_7_natural_timeout.source.md`
+- [Source provenance](<../../results/j14_blog_prep/01_raw_refs/excerpt_a1_8_natural_timeout.source.md>) — `results/j14_blog_prep/01_raw_refs/excerpt_a1_8_natural_timeout.source.md`
+- [Source provenance](<../../results/j14_blog_prep/01_raw_refs/excerpt_j14_a1_11_r1_static_separate_process_pipeline.source.md>) — `results/j14_blog_prep/01_raw_refs/excerpt_j14_a1_11_r1_static_separate_process_pipeline.source.md`
+- [Source provenance](<../../results/j14_blog_prep/01_raw_refs/excerpt_j14_a1_12_r1_static_feedback_bridge_startup.source.md>) — `results/j14_blog_prep/01_raw_refs/excerpt_j14_a1_12_r1_static_feedback_bridge_startup.source.md`
+- [Source provenance](<../../results/j14_blog_prep/01_raw_refs/excerpt_j14_a1_13_r1_static_handshake_startup.source.md>) — `results/j14_blog_prep/01_raw_refs/excerpt_j14_a1_13_r1_static_handshake_startup.source.md`
+- [Source provenance](<../../results/j14_blog_prep/01_raw_refs/excerpt_j14_a1_13_r2_static_handshake_startup.source.md>) — `results/j14_blog_prep/01_raw_refs/excerpt_j14_a1_13_r2_static_handshake_startup.source.md`
+- [Source provenance](<../../results/j14_blog_prep/01_raw_refs/excerpt_j14_a2_q1_r1_static_120s_diagnostic_tail_samples.source.md>) — `results/j14_blog_prep/01_raw_refs/excerpt_j14_a2_q1_r1_static_120s_diagnostic_tail_samples.source.md`
+- [Source provenance](<../../results/j14_blog_prep/01_raw_refs/excerpt_j14_a2_q1_r2_static_300s_diagnostic_tail_samples.source.md>) — `results/j14_blog_prep/01_raw_refs/excerpt_j14_a2_q1_r2_static_300s_diagnostic_tail_samples.source.md`
+- [Source provenance](<../../results/j14_blog_prep/01_raw_refs/excerpt_j14_a2_q3_r1d_classical_60s_max_write.source.md>) — `results/j14_blog_prep/01_raw_refs/excerpt_j14_a2_q3_r1d_classical_60s_max_write.source.md`
+- [Source provenance](<../../results/j14_blog_prep/01_raw_refs/excerpt_j14_a2_q3_r1d_classical_60s_runtime.source.md>) — `results/j14_blog_prep/01_raw_refs/excerpt_j14_a2_q3_r1d_classical_60s_runtime.source.md`
+- [Source provenance](<../../results/j14_blog_prep/01_raw_refs/excerpt_j14_a2_q3_r2_ladrc_60s_max_write.source.md>) — `results/j14_blog_prep/01_raw_refs/excerpt_j14_a2_q3_r2_ladrc_60s_max_write.source.md`
+- [Source provenance](<../../results/j14_blog_prep/01_raw_refs/excerpt_j14_a2_q3_r2_ladrc_60s_runtime.source.md>) — `results/j14_blog_prep/01_raw_refs/excerpt_j14_a2_q3_r2_ladrc_60s_runtime.source.md`
+- [Source provenance](<../../results/j14_blog_prep/01_raw_refs/excerpt_q3_r1c_parent_lease_window.source.md>) — `results/j14_blog_prep/01_raw_refs/excerpt_q3_r1c_parent_lease_window.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a1_12_r1_static_feedbac](<../../results/j14_blog_prep/01_raw_refs/j14_a1_12_r1_static_feedback_bridge_handshake.source.md>) — `results/j14_blog_prep/01_raw_refs/j14_a1_12_r1_static_feedback_bridge_handshake.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a1_13_r1_static_handsha](<../../results/j14_blog_prep/01_raw_refs/j14_a1_13_r1_static_handshake_handshake.source.md>) — `results/j14_blog_prep/01_raw_refs/j14_a1_13_r1_static_handshake_handshake.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a1_13_r2_static_handsha](<../../results/j14_blog_prep/01_raw_refs/j14_a1_13_r2_static_handshake_handshake.source.md>) — `results/j14_blog_prep/01_raw_refs/j14_a1_13_r2_static_handshake_handshake.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a1_3_r1_stage_a_30s/com](<../../results/j14_blog_prep/01_raw_refs/j14_a1_3_r1_stage_a_30s_recovery_last.source.md>) — `results/j14_blog_prep/01_raw_refs/j14_a1_3_r1_stage_a_30s_recovery_last.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a1_4_r1_fresh_state/com](<../../results/j14_blog_prep/01_raw_refs/j14_a1_4_r1_fresh_state_recovery_last.source.md>) — `results/j14_blog_prep/01_raw_refs/j14_a1_4_r1_fresh_state_recovery_last.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a1_5_r1_static_resume/c](<../../results/j14_blog_prep/01_raw_refs/j14_a1_5_r1_static_resume_recovery_last.source.md>) — `results/j14_blog_prep/01_raw_refs/j14_a1_5_r1_static_resume_recovery_last.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_active_mock_300s](<../../results/j14_blog_prep/01_raw_refs/j14_a2_q3j_active_mock_300s_measurement_window.source.md>) — `results/j14_blog_prep/01_raw_refs/j14_a2_q3j_active_mock_300s_measurement_window.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_active_mock_60s/](<../../results/j14_blog_prep/01_raw_refs/j14_a2_q3j_active_mock_60s_measurement_window.source.md>) — `results/j14_blog_prep/01_raw_refs/j14_a2_q3j_active_mock_60s_measurement_window.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_baseline_active_](<../../results/j14_blog_prep/01_raw_refs/j14_a2_q3j_baseline_active_30s_r2_measurement_window.source.md>) — `results/j14_blog_prep/01_raw_refs/j14_a2_q3j_baseline_active_30s_r2_measurement_window.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_baseline_event_p](<../../results/j14_blog_prep/01_raw_refs/j14_a2_q3j_baseline_event_profile_8s_parent_main.source.md>) — `results/j14_blog_prep/01_raw_refs/j14_a2_q3j_baseline_event_profile_8s_parent_main.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_baseline_event_p](<../../results/j14_blog_prep/01_raw_refs/j14_a2_q3j_baseline_event_profile_8s_profile_measurement_window.source.md>) — `results/j14_blog_prep/01_raw_refs/j14_a2_q3j_baseline_event_profile_8s_profile_measurement_window.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_fixed_profile_8s](<../../results/j14_blog_prep/01_raw_refs/j14_a2_q3j_fixed_profile_8s_parent_main.source.md>) — `results/j14_blog_prep/01_raw_refs/j14_a2_q3j_fixed_profile_8s_parent_main.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_fixed_profile_8s](<../../results/j14_blog_prep/01_raw_refs/j14_a2_q3j_fixed_profile_8s_profile_measurement_window.source.md>) — `results/j14_blog_prep/01_raw_refs/j14_a2_q3j_fixed_profile_8s_profile_measurement_window.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_static_mock_60s/](<../../results/j14_blog_prep/01_raw_refs/j14_a2_q3j_static_mock_60s_measurement_window.source.md>) — `results/j14_blog_prep/01_raw_refs/j14_a2_q3j_static_mock_60s_measurement_window.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j13/j13_2b1_roll_active/2026100](<../../results/j14_blog_prep/01_raw_refs/pre_j14_scheduler_fault_snapshot.source.md>) — `results/j14_blog_prep/01_raw_refs/pre_j14_scheduler_fault_snapshot.source.md`
+- [Natural TX timeout: measured boundaries](<../../results/j14_blog_prep/04_tables/table02_natural_tx_timeout_cases.md>) — `results/j14_blog_prep/04_tables/table02_natural_tx_timeout_cases.md`
+- [Feedback ages are distinct measurement boundaries](<../../results/j14_blog_prep/04_tables/table03_feedback_age_pipeline_breakdown.md>) — `results/j14_blog_prep/04_tables/table03_feedback_age_pipeline_breakdown.md`
+- [Startup completeness](<../../results/j14_blog_prep/04_tables/table04_startup_handshake_counts.md>) — `results/j14_blog_prep/04_tables/table04_startup_handshake_counts.md`
+- [Q1 wrapper, actual Serial.write and queue diagnostics](<../../results/j14_blog_prep/04_tables/table05_q1_long_tail_samples.md>) — `results/j14_blog_prep/04_tables/table05_q1_long_tail_samples.md`
+- [Static qualification is not Active control qualification](<../../results/j14_blog_prep/04_tables/table06_static_active_timeline.md>) — `results/j14_blog_prep/04_tables/table06_static_active_timeline.md`
+- [Parent CPU samples: one core = 100%](<../../results/j14_blog_prep/04_tables/table07a_parent_cpu_before_after.md>) — `results/j14_blog_prep/04_tables/table07a_parent_cpu_before_after.md`
+- [Parent IPC lease intervals](<../../results/j14_blog_prep/04_tables/table07b_parent_ipc_gap_before_after.md>) — `results/j14_blog_prep/04_tables/table07b_parent_ipc_gap_before_after.md`
+- [R1C event timestamps relative to STOP](<../../results/j14_blog_prep/04_tables/table08_parent_lease_failure_timeline.md>) — `results/j14_blog_prep/04_tables/table08_parent_lease_failure_timeline.md`
+- [Profile counts: measured software mechanism](<../../results/j14_blog_prep/04_tables/table09_executor_profile_before_after.md>) — `results/j14_blog_prep/04_tables/table09_executor_profile_before_after.md`
+- [Runtime distributions by explicit window](<../../results/j14_blog_prep/04_tables/table10_final_runtime_comparison.md>) — `results/j14_blog_prep/04_tables/table10_final_runtime_comparison.md`
+- [Counts, safety events and window identities](<../../results/j14_blog_prep/04_tables/table10_runtime_qualification_counts.md>) — `results/j14_blog_prep/04_tables/table10_runtime_qualification_counts.md`
+- [Recovery stage evidence](<../../results/j14_blog_prep/04_tables/table11_recovery_flow.md>) — `results/j14_blog_prep/04_tables/table11_recovery_flow.md`
+- [Case taxonomy and evidence boundaries](<../../results/j14_blog_prep/04_tables/table12_j14_case_summary.md>) — `results/j14_blog_prep/04_tables/table12_j14_case_summary.md`
+- [Evidence-supported takeaways](<../../results/j14_blog_prep/05_notes/blog_takeaways.md>) — `results/j14_blog_prep/05_notes/blog_takeaways.md`
+- [Case Evidence Cards](<../../results/j14_blog_prep/05_notes/case_evidence_cards.md>) — `results/j14_blog_prep/05_notes/case_evidence_cards.md`
+- [Code Excerpts](<../../results/j14_blog_prep/05_notes/code_excerpt_index.md>) — `results/j14_blog_prep/05_notes/code_excerpt_index.md`
+- [Boundaries / Missing Evidence](<../../results/j14_blog_prep/05_notes/evidence_boundaries_and_missing_items.md>) — `results/j14_blog_prep/05_notes/evidence_boundaries_and_missing_items.md`
+- [Runtime / Measurement Pipeline](<../../results/j14_blog_prep/05_notes/fig01_j14_runtime_pipeline.md>) — `results/j14_blog_prep/05_notes/fig01_j14_runtime_pipeline.md`
+- [Natural UART TX Timeout Cases](<../../results/j14_blog_prep/05_notes/fig02_natural_tx_timeout_cases.md>) — `results/j14_blog_prep/05_notes/fig02_natural_tx_timeout_cases.md`
+- [Feedback / IPC / Message Age Boundaries](<../../results/j14_blog_prep/05_notes/fig03_feedback_age_pipeline_breakdown.md>) — `results/j14_blog_prep/05_notes/fig03_feedback_age_pipeline_breakdown.md`
+- [Startup Handshake Packet Completeness](<../../results/j14_blog_prep/05_notes/fig04_startup_handshake_packet_loss_fix.md>) — `results/j14_blog_prep/05_notes/fig04_startup_handshake_packet_loss_fix.md`
+- [Q1 Instrumentation Effect](<../../results/j14_blog_prep/05_notes/fig05_q1_wrapper_serial_diagnostics.md>) — `results/j14_blog_prep/05_notes/fig05_q1_wrapper_serial_diagnostics.md`
+- [Static vs Active Qualification](<../../results/j14_blog_prep/05_notes/fig06_static_vs_active_qualification_timeline.md>) — `results/j14_blog_prep/05_notes/fig06_static_vs_active_qualification_timeline.md`
+- [Parent CPU Before / After Fix](<../../results/j14_blog_prep/05_notes/fig07a_parent_cpu_before_after.md>) — `results/j14_blog_prep/05_notes/fig07a_parent_cpu_before_after.md`
+- [Parent IPC Gap Before / After Fix](<../../results/j14_blog_prep/05_notes/fig07b_parent_ipc_gap_before_after.md>) — `results/j14_blog_prep/05_notes/fig07b_parent_ipc_gap_before_after.md`
+- [R1C Parent Lease Failure Timeline](<../../results/j14_blog_prep/05_notes/fig08_parent_lease_failure_timeline.md>) — `results/j14_blog_prep/05_notes/fig08_parent_lease_failure_timeline.md`
+- [Executor Root Cause / Fix](<../../results/j14_blog_prep/05_notes/fig09_executor_profile_before_after.md>) — `results/j14_blog_prep/05_notes/fig09_executor_profile_before_after.md`
+- [Final Static / Classical / LADRC Runtime](<../../results/j14_blog_prep/05_notes/fig10a_final_write_cycle_runtime.md>) — `results/j14_blog_prep/05_notes/fig10a_final_write_cycle_runtime.md`
+- [Final Static / Classical / LADRC Runtime](<../../results/j14_blog_prep/05_notes/fig10b_final_feedback_scheduler_runtime.md>) — `results/j14_blog_prep/05_notes/fig10b_final_feedback_scheduler_runtime.md`
+- [A1.3 → A1.5 Recovery Flow](<../../results/j14_blog_prep/05_notes/fig11_recovery_flow.md>) — `results/j14_blog_prep/05_notes/fig11_recovery_flow.md`
+- [Candidate Storyline (素材规划，不是博客正文)](<../../results/j14_blog_prep/05_notes/j14_blog_storyline.md>) — `results/j14_blog_prep/05_notes/j14_blog_storyline.md`
+- [Report vs Raw Discrepancies](<../../results/j14_blog_prep/05_notes/report_vs_raw_discrepancies.md>) — `results/j14_blog_prep/05_notes/report_vs_raw_discrepancies.md`
+- [Blog Material Map](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/00_manifest/BLOG_MATERIAL_MAP.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/00_manifest/BLOG_MATERIAL_MAP.md`
+- [Excerpts](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/00_manifest/EXCERPT_INDEX.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/00_manifest/EXCERPT_INDEX.md`
+- [Figure Index](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/00_manifest/FIGURE_INDEX.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/00_manifest/FIGURE_INDEX.md`
+- [J14 Evidence Inventory](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/00_manifest/J14_EVIDENCE_INVENTORY.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/00_manifest/J14_EVIDENCE_INVENTORY.md`
+- [Final Quality Check](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/00_manifest/QUALITY_CHECK.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/00_manifest/QUALITY_CHECK.md`
+- [Source Index](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/00_manifest/SOURCE_INDEX.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/00_manifest/SOURCE_INDEX.md`
+- [Table Index](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/00_manifest/TABLE_INDEX.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/00_manifest/TABLE_INDEX.md`
+- [NUC → Mac Transfer](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/00_manifest/TRANSFER_README.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/00_manifest/TRANSFER_README.md`
+- [Existing report claim (L3, not numerical truth)](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/a1_13_report_claim_excerpt.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/a1_13_report_claim_excerpt.md`
+- [current_gate](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/current_gate.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/current_gate.md`
+- [latest_target](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/latest_target.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/latest_target.md`
+- [lease_sender](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/lease_sender.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/lease_sender.md`
+- [parent_lease](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/parent_lease.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/parent_lease.md`
+- [NUC Original Before: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_software/](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/q3j_executor.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/q3j_executor.source.md`
+- [queue_after_boundary](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/queue_after_boundary.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/queue_after_boundary.md`
+- [scheduler_deadline](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/scheduler_deadline.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/scheduler_deadline.md`
+- [startup_handshake](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/startup_handshake.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/startup_handshake.md`
+- [three_process_entry](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/three_process_entry.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/three_process_entry.md`
+- [tx_queue_gating](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/tx_queue_gating.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/code/tx_queue_gating.md`
+- [Source provenance](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_a1_7_natural_timeout.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_a1_7_natural_timeout.source.md`
+- [Source provenance](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_a1_8_natural_timeout.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_a1_8_natural_timeout.source.md`
+- [Source provenance](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a1_11_r1_static_separate_process_pipeline.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a1_11_r1_static_separate_process_pipeline.source.md`
+- [Source provenance](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a1_12_r1_static_feedback_bridge_startup.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a1_12_r1_static_feedback_bridge_startup.source.md`
+- [Source provenance](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a1_13_r1_static_handshake_startup.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a1_13_r1_static_handshake_startup.source.md`
+- [Source provenance](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a1_13_r2_static_handshake_startup.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a1_13_r2_static_handshake_startup.source.md`
+- [Source provenance](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a2_q1_r1_static_120s_diagnostic_tail_samples.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a2_q1_r1_static_120s_diagnostic_tail_samples.source.md`
+- [Source provenance](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a2_q1_r2_static_300s_diagnostic_tail_samples.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a2_q1_r2_static_300s_diagnostic_tail_samples.source.md`
+- [Source provenance](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a2_q3_r1d_classical_60s_max_write.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a2_q3_r1d_classical_60s_max_write.source.md`
+- [Source provenance](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a2_q3_r1d_classical_60s_runtime.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a2_q3_r1d_classical_60s_runtime.source.md`
+- [Source provenance](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a2_q3_r2_ladrc_60s_max_write.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a2_q3_r2_ladrc_60s_max_write.source.md`
+- [Source provenance](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a2_q3_r2_ladrc_60s_runtime.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_j14_a2_q3_r2_ladrc_60s_runtime.source.md`
+- [Source provenance](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_q3_r1c_parent_lease_window.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/excerpt_q3_r1c_parent_lease_window.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a1_12_r1_static_feedbac](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a1_12_r1_static_feedback_bridge_handshake.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a1_12_r1_static_feedback_bridge_handshake.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a1_13_r1_static_handsha](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a1_13_r1_static_handshake_handshake.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a1_13_r1_static_handshake_handshake.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a1_13_r2_static_handsha](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a1_13_r2_static_handshake_handshake.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a1_13_r2_static_handshake_handshake.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a1_3_r1_stage_a_30s/com](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a1_3_r1_stage_a_30s_recovery_last.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a1_3_r1_stage_a_30s_recovery_last.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a1_4_r1_fresh_state/com](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a1_4_r1_fresh_state_recovery_last.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a1_4_r1_fresh_state_recovery_last.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a1_5_r1_static_resume/c](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a1_5_r1_static_resume_recovery_last.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a1_5_r1_static_resume_recovery_last.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_active_mock_300s](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a2_q3j_active_mock_300s_measurement_window.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a2_q3j_active_mock_300s_measurement_window.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_active_mock_60s/](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a2_q3j_active_mock_60s_measurement_window.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a2_q3j_active_mock_60s_measurement_window.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_baseline_active_](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a2_q3j_baseline_active_30s_r2_measurement_window.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a2_q3j_baseline_active_30s_r2_measurement_window.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_baseline_event_p](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a2_q3j_baseline_event_profile_8s_parent_main.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a2_q3j_baseline_event_profile_8s_parent_main.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_baseline_event_p](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a2_q3j_baseline_event_profile_8s_profile_measurement_window.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a2_q3j_baseline_event_profile_8s_profile_measurement_window.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_fixed_profile_8s](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a2_q3j_fixed_profile_8s_parent_main.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a2_q3j_fixed_profile_8s_parent_main.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_fixed_profile_8s](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a2_q3j_fixed_profile_8s_profile_measurement_window.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a2_q3j_fixed_profile_8s_profile_measurement_window.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j14/j14_a2_q3j_static_mock_60s/](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a2_q3j_static_mock_60s_measurement_window.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/j14_a2_q3j_static_mock_60s_measurement_window.source.md`
+- [NUC Original: `/home/lyapunov/bone_drill/results/j13/j13_2b1_roll_active/2026100](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/pre_j14_scheduler_fault_snapshot.source.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/01_raw_refs/pre_j14_scheduler_fault_snapshot.source.md`
+- [Natural TX timeout: measured boundaries](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table02_natural_tx_timeout_cases.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table02_natural_tx_timeout_cases.md`
+- [Feedback ages are distinct measurement boundaries](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table03_feedback_age_pipeline_breakdown.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table03_feedback_age_pipeline_breakdown.md`
+- [Startup completeness](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table04_startup_handshake_counts.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table04_startup_handshake_counts.md`
+- [Q1 wrapper, actual Serial.write and queue diagnostics](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table05_q1_long_tail_samples.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table05_q1_long_tail_samples.md`
+- [Static qualification is not Active control qualification](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table06_static_active_timeline.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table06_static_active_timeline.md`
+- [Parent CPU samples: one core = 100%](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table07a_parent_cpu_before_after.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table07a_parent_cpu_before_after.md`
+- [Parent IPC lease intervals](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table07b_parent_ipc_gap_before_after.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table07b_parent_ipc_gap_before_after.md`
+- [R1C event timestamps relative to STOP](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table08_parent_lease_failure_timeline.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table08_parent_lease_failure_timeline.md`
+- [Profile counts: measured software mechanism](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table09_executor_profile_before_after.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table09_executor_profile_before_after.md`
+- [Runtime distributions by explicit window](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table10_final_runtime_comparison.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table10_final_runtime_comparison.md`
+- [Counts, safety events and window identities](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table10_runtime_qualification_counts.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table10_runtime_qualification_counts.md`
+- [Recovery stage evidence](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table11_recovery_flow.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table11_recovery_flow.md`
+- [Case taxonomy and evidence boundaries](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table12_j14_case_summary.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/04_tables/table12_j14_case_summary.md`
+- [Evidence-supported takeaways](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/blog_takeaways.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/blog_takeaways.md`
+- [Case Evidence Cards](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/case_evidence_cards.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/case_evidence_cards.md`
+- [Code Excerpts](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/code_excerpt_index.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/code_excerpt_index.md`
+- [Boundaries / Missing Evidence](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/evidence_boundaries_and_missing_items.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/evidence_boundaries_and_missing_items.md`
+- [Runtime / Measurement Pipeline](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig01_j14_runtime_pipeline.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig01_j14_runtime_pipeline.md`
+- [Natural UART TX Timeout Cases](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig02_natural_tx_timeout_cases.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig02_natural_tx_timeout_cases.md`
+- [Feedback / IPC / Message Age Boundaries](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig03_feedback_age_pipeline_breakdown.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig03_feedback_age_pipeline_breakdown.md`
+- [Startup Handshake Packet Completeness](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig04_startup_handshake_packet_loss_fix.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig04_startup_handshake_packet_loss_fix.md`
+- [Q1 Instrumentation Effect](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig05_q1_wrapper_serial_diagnostics.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig05_q1_wrapper_serial_diagnostics.md`
+- [Static vs Active Qualification](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig06_static_vs_active_qualification_timeline.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig06_static_vs_active_qualification_timeline.md`
+- [Parent CPU Before / After Fix](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig07a_parent_cpu_before_after.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig07a_parent_cpu_before_after.md`
+- [Parent IPC Gap Before / After Fix](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig07b_parent_ipc_gap_before_after.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig07b_parent_ipc_gap_before_after.md`
+- [R1C Parent Lease Failure Timeline](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig08_parent_lease_failure_timeline.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig08_parent_lease_failure_timeline.md`
+- [Executor Root Cause / Fix](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig09_executor_profile_before_after.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig09_executor_profile_before_after.md`
+- [Final Static / Classical / LADRC Runtime](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig10a_final_write_cycle_runtime.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig10a_final_write_cycle_runtime.md`
+- [Final Static / Classical / LADRC Runtime](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig10b_final_feedback_scheduler_runtime.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig10b_final_feedback_scheduler_runtime.md`
+- [A1.3 → A1.5 Recovery Flow](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig11_recovery_flow.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/fig11_recovery_flow.md`
+- [Candidate Storyline (素材规划，不是博客正文)](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/j14_blog_storyline.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/j14_blog_storyline.md`
+- [Report vs Raw Discrepancies](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/report_vs_raw_discrepancies.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/05_notes/report_vs_raw_discrepancies.md`
+- [J14 Blog Materials](<../../results/j14_blog_prep/06_bundle/j14_blog_materials/README.md>) — `results/j14_blog_prep/06_bundle/j14_blog_materials/README.md`
+- [J14 Blog Materials](<../../results/j14_blog_prep/README.md>) — `results/j14_blog_prep/README.md`
+- [Six-DOF combined trajectory result](<../../results/mode3_combined_pose/run_20261106_143627_158172/summary.md>) — `results/mode3_combined_pose/run_20261106_143627_158172/summary.md`
+
+## 本轮新增的当前说明
+
+项目首页和中文导航已重写；当前说明分为架构、控制、硬件、操作、开发和实验索引，入口统一在 [docs/README](../README.md)。本清单的 402 份统计按整理前正文计算，不把新索引、兼容页算成旧实验资产。
+

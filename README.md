@@ -1,168 +1,158 @@
-# 6PUS Force-Feedback-Assisted Active Stabilization
+# 6PUS 原生力控与双 IMU 主动稳定
 
-[English](README.md) | [简体中文](README_CN.md)
+本工程研究在 **六个电机全部运行厂家原生 Mode 3 力控模式**时，如何利用编码器位置反馈实现 6PUS 并联机构的位姿运动与双 IMU 主动姿态稳定。上位机将姿态目标经 IK 转换为六轴位置参考，由六轴位置 PI-D 产生轴向力指令；电机内部力闭环执行这些指令。主动稳定控制 Roll、Pitch、Yaw，平移参考保持本次实测起始位姿。
 
-Active three-axis attitude stabilization of a six-actuator 6PUS Stewart parallel robot under moving-base disturbances. The system combines dual IMUs, attitude feedforward and feedback, inverse kinematics, and measured actuator force changes to coordinate the electric cylinders and hold the platform near its initial world-frame attitude.
+**当前主入口是三进程双 IMU 原生力控长期运行程序**，包含正常退出后自动返回 Home 的后续工作区实现。Z 轴、单轴、组合轨迹及早期研究入口仍各自保留，参数不能相互套用。[完整文档导航](docs/README.md)提供当前说明和历史归档入口。
 
-Although the repository is named `torque_control`, its main implemented method is **force-feedback-assisted position control with a dynamic force-to-position mapping (Route A)**. The actuators receive position targets through `0x29` in position Servo mode (`0x25=1`). This path neither sends motor-shaft torque commands in N·m nor uses the manufacturer's native force-control mode or `0x27` force target.
+版本说明：`mode3-native-capacity-20261107` 对应 `46081f59b1a01705e9fb9780fd647e64a2352177`，正式保留三进程原生能力输出策略；当前工作区还包含后续长期运行及自动 Home 修改。不要把这些后续功能归入该标签。本次文档整理不修改标签，不提交或推送。
 
-## Control architecture
+## 背景与控制输入
 
-Route A retains the original Base-IMU attitude feedforward, Platform-IMU feedback, three-axis attitude P/PD structure and 6PUS inverse kinematics. It adds six position-error controllers and a force-feedback compensation loop before the position Servo.
+Position 工程已经建立双 IMU 姿态控制、运动学和 J14 长时间运行架构，以位置伺服指令执行运动。Torque 工程保留了力反馈辅助位置控制及力矩研究原型；不能仅凭工程名称将其解释成已验证的电机轴力矩接口。本 Force 工程使用电机的原生轴向力接口，研究外层位置/姿态控制与内层电机力闭环之间的动态关系。
+
+| 工程/路径 | 主要执行器输入 | 与当前 Force 的关系 |
+|---|---|---|
+| Position J14 | Servo Mode 1，`0x29` 位置 | 姿态算法、IK、独占 UART 和三进程机制的来源 |
+| Torque / 继承的 Route A | 主要为 `0x29` 位置；部分研究仅离线 | 力反馈辅助位置、力矩概念与原生力模式须区分 |
+| 本工程三进程主动稳定 | Force Mode 3，`0x27` 有符号目标力，单位 **g** | 外层六轴位置 PI-D + 电机内部力闭环 |
+| 正常退出后的 Home | 独立 J7 Servo Mode 1，`0x29` 位置 | 力控已经停止后才启动，不属于 Mode 3 主动控制阶段 |
+
+LAF 力闭环电缸带内部力传感器，`0x2C` 提供实际力反馈、`0x2D` 提供 ADC 原始值。Mode 3 接收 `0x27` 目标力，由设备内部闭环驱动电缸；内部控制器具体增益、采样率及负载下带宽在现有资料中没有充分证据。本工程不会把目标力读回当成实际力，也不会把指令已经发送当成机构已经响应。
+
+## 机构与完整控制链
+
+6PUS 是具有六条支链、六个直线执行器的 Stewart 类并联机构。六个编码器位置共同决定平台位姿，各执行器通过机构耦合，不是六个互不影响的独立负载。Base IMU 测量基座姿态变化，Platform IMU 测量平台姿态变化；FK 由六轴编码器重建位姿，不能替代外部绝对位姿测量。
 
 ```mermaid
 flowchart TD
-    Base[Base IMU] --> FF[Attitude feedforward]
-    Platform[Platform IMU] --> Att[Three-axis attitude P/PD]
-    FF --> Att
-    Att --> IK[6PUS inverse kinematics]
-    IK --> Ref[Length targets anchored to initial measured positions]
-    Ref --> Eq[Position error: desired minus actual]
-    Position[Six-axis position feedback] --> Eq
-    Eq --> PID[Six position-error PIDs]
-    PID --> Ef[Force error: demand minus measurement]
-    Raw[Six-axis measured force-related raw values] --> Zero[Per-axis saved zero and signed scale]
-    Zero --> Ef
-    Ef --> Map[Rate-limited integral force-to-position mapping]
-    Map --> Add[Add position correction]
-    Ref --> Add
-    Add --> Shape[Optional trajectory shaping]
-    Shape --> UART[UART speed limiting and metre-to-step conversion]
-    UART --> Servo[Position Servo: 0x29]
-    Servo --> Robot[6PUS platform]
-    Robot --> Platform
-    Robot --> Position
-    Robot --> Raw
+    B[Base IMU 四元数] --> S[共同主机接收时间对齐与坐标变换]
+    P[Platform IMU 四元数] --> S
+    S --> A[Base SO3 逆向前馈 + Platform 世界姿态误差]
+    A --> L[三轴 LADRC 残差与 SO3 合成]
+    L --> T[目标 RPY + 实测起点 XYZ]
+    T --> K[差分 IK 与真实行程检查]
+    K --> J[六轴位置 PI-D]
+    Q[六轴真实编码器反馈] --> J
+    J --> F[实时保持力偏置 + 力增量]
+    F --> G[最终绝对边界与整数 g 编码]
+    G --> M[六轴 Mode 3 / 0x27]
+    M --> I[电机内部力闭环与耦合机构]
+    I --> Q
+    I --> P
+    Q --> FK[FK 重建与异步记录]
 ```
 
-The attitude layer uses the inherited quaternion reference handling, coordinate transform and SO(3) residual composition. The inverse of the relative base rotation supplies geometric feedforward; platform attitude error supplies the residual feedback. The runtime captures the first valid dual-IMU reference and anchors IK length changes to the first measured actuator positions. It does not command a startup move to model HOME. The stabilization reference is the initial attitude inferred from the IMUs, rather than an externally measured absolute orientation.
+两路输入采用 H30 已融合四元数，本入口不重新设计原始陀螺仪/加速度融合。捕获各自初始姿态，沿用 Position 的 `Rz(+90°)` 机械坐标变换，通过 SO(3) 计算平台相对固定世界参考的误差；Base 逆向前馈和 LADRC 角度残差合成新的目标姿态。Classical P/PD 仅作为对照记录，不与 LADRC 再次叠加。
 
-### Position error, force feedback and compensation
+双 IMU 使用最新共同**主机单调接收时间**进行 SLERP 插值，不外推。ROS header 和主机接收时间都不代表设备硬件同步采样。IK 以本次实测六轴位置及其 FK 为起点，采用差分锚定，不假设电机都在 1000 steps；无起点 ±100 steps 小框，也不以 SO(3) 缩放悄悄削减不可达目标。不可达目标、IK 状态和剩余行程分别记录。[坐标、同步和控制公式](docs/control/dual_imu_position_force.md)。
 
-For each axis `i`, the implementation in [controller.py](bone_ws/scripts/research/force_position_control/controller.py) evaluates:
+当前主动链**不是任务空间 Z 力 PID，也不通过 Jacobian 将任务 Wrench 分配成六轴控制力**；相关早期探索保留在[历史阶段归档](docs/archive/README.md)。
 
-```text
-e_q[i,k]       = q_d[i,k] - q[i,k]                         [m]
-I[i,k]         = I[i,k-1] + e_q[i,k] * dt[i]
-D[i,k]         = (e_q[i,k] - e_q[i,k-1]) / dt[i]
-F_cmd[i,k]     = clip(Kp[i]*e_q[i,k] + Ki[i]*I[i,k]
-                     + Kd[i]*D[i,k], -F_limit[i], F_limit[i])
-F_actual[i,k]  = relative_scale[i] * (raw_0x2C[i,k] - raw_zero[i])
-e_F[i,k]       = F_cmd[i,k] - F_actual[i,k]
-v_corr[i,k]    = clip(A[i]*e_F[i,k], -v_limit[i], v_limit[i])
-delta_q[i,k]   = clip(delta_q[i,k-1] + v_corr[i,k]*dt[i],
-                     q_min[i]-q_d[i,k], q_max[i]-q_d[i,k])
-q_cmd[i,k]     = q_d[i,k] + delta_q[i,k]                     [m]
-```
+## 三进程运行架构
 
-Here `q_d` is the anchored IK target, and `q` is measured length. `dt[i]` comes from successive per-axis host receipt timestamps. The PID conditionally holds its integral when force-demand saturation would be driven further; the derivative is a finite difference of position error. The first valid sample initializes state without issuing a controller position target. The current saved configuration has `Ki=Kd=0` for both attitude and position-error controllers; the implementations retain their configurable PID structures.
+| 进程 | 负责内容 | 隔离的阻塞工作 |
+|---|---|---|
+| Parent | ROS 双 IMU、姿态/SO(3)/LADRC、IK、阶段协调、最新完整参考发布、Lease | 不打开电机 UART；ROS Executor 与目标生成分开调度 |
+| UART Child | 唯一电机串口所有者；50 Hz 六轴位置 PI-D、Mode 3/力事务、实时反馈检查、故障停止 | 不运行 ROS、FK 或同步文件记录 |
+| Feedback Bridge | 唯一反馈 socket 消费者；ROS 反馈发布、FK、tracking 和异步文件记录 | FK/存储不占 UART 控制循环 |
 
-**`F_cmd`, `F_actual` and `e_F` currently use `relative_raw`, not N.** The `F` notation denotes an incremental force-related demand, measurement and error on a common relative scale. The position PID generates the demand from length error; it does not command torque or directly write a drive register. Measured force changes provide information about loading that position error alone does not contain. The saved stationary reference can include gravity and static load, so a zero relative reading does not mean zero physical force.
+两路 H30 节点是额外的传感器进程，不计入上述三个电机控制进程。IPC 沿用 J14 的非阻塞 `AF_UNIX/SOCK_SEQPACKET`、epoch、单调序号和最新值覆盖。Parent 发完整 **IK 位置参考**，Child 根据最新实际位置计算力，不跨进程积压旧力指令。
 
-The dynamic mapping integrates force error into a position offset. Its state persists between samples; it is not a static force-to-displacement multiplication or an implemented mass–spring–damper model. With positive `relative_scale` and `A`, an increase in measured force at unchanged demand reduces the position correction. Actual physical feedback direction depends on each sensor's installation and configured sign. Force feedback changes `e_F` and `delta_q` directly; it changes the position PID output through the resulting position feedback, not through an extra PID input.
+Parent Lease 1000 ms 与 IK 参考新鲜度 200 ms 独立；心跳不能延长旧目标寿命。Mode 3 确认后必须接到该时刻之后发布的有效参考，才开始固定 1 秒 `initial_hold`，随后进入 `stabilize`。模式/`0x27` 读回分散到不同周期，避免每秒集中十二次同步查询。指令序号、UART 周期序号、PID 输入反馈序号及各轴接收时间分别保存。[架构、时序与失效边界](docs/architecture/three_process.md)。
 
-The corrected target passes through the optional trajectory shaper and then the sole UART owner's speed limiter and step conversion. In the current saved configuration, the extra trajectory filter is **disabled**; UART time-based speed limiting remains active. [ros_node.py](bone_ws/scripts/research/force_position_control/ros_node.py) pairs position and force from the same status frames. These are six sequentially received frames, not simultaneous device samples. [uart_driver.py](bone_ws/scripts/research/force_position_control/uart_driver.py) validates all six targets before issuing position writes, without automatic motion-write retries.
+## 六轴 PI-D 与当前有效参数
 
-### Comparison with the original controller
+以下值仅描述当前三进程入口，来源为 `mode3_process_policy.py`、`mode3_dual_imu.py`、`z_position_motion.py::pid_config` 和 `joint_position_force_pid.py` 的组合，不能用通用类默认值代替最终生效值。
 
-| Stage | Baseline: dual-IMU feedforward + Classical P/PD | Proposed: Route A |
-| --- | --- | --- |
-| Attitude and IK | Base feedforward, platform attitude feedback, three-axis P/PD, IK | Retained upstream structure |
-| Actuator feedback | Position Servo tracks length targets | Position error generates a relative force demand; measured force changes close the added compensation loop |
-| Position target | Original length target | Original target plus dynamic force-based correction |
-| Drive interface | Position Servo | Same position Servo, `0x29` |
+| 项目 | 三进程当前行为 |
+|---|---|
+| 控制循环 | 50 Hz，标称 20 ms；真实周期以记录为准 |
+| 六轴 Kp / Ki / Kd | 均为 8000 N/m、6000 N/(m·s)、1000 N·s/m |
+| 积分输入 | 真实 `q_ref - q_encoder`；±1 step（25 μm）死区 |
+| P 项 | 预测位置误差；预测时域为各轴反馈年龄 + 20 ms |
+| 速度及 D 项 | 80 ms 窗口连续线性回归，40 ms 一阶滤波；`D = -Kd × 速度` |
+| PI-D 增量 / 积分独立上限 | 不设置；已取消旧 ±4 N / ±2.5 N 实验限幅 |
+| 正常位置参考速度 / 力指令变化率 | 不设置；没有 0.2 mm/s、500 g/s 人为整形 |
+| 最终目标 | 本次实际 `0x2C` 保持偏置 + PI-D 增量，包含偏置一起限制到 ±50 N 规格边界 |
+| 原生整数编码 | **±5098 g**；名义 `1 g = 0.00980665 N` |
+| 抗积分饱和 | 最终实际编码输出饱和且积分会加深饱和时，条件回退积分；量化误差单独容忍 |
+| 跟踪误差 | 完整记录；三进程已取消旧 2.5 mm 参考误差硬退出 |
 
-The main reference is [J14 Feedforward + Classical P/PD](https://github.com/LiorenYuhang/6pus-bone-drill-position-control/blob/main/bone_ws/scripts/run_j14_demo_feedforward_pd.sh) in the independent [position-control repository](https://github.com/LiorenYuhang/6pus-bone-drill-position-control). Route A's independent runtime does not require a J14 process. Historical algorithms and experiments remain in the repository; they are not alternative names for this active control path or evidence of its performance improvement.
+同一个 PI-D 实例跨初始保持和主动稳定，积分与速度状态连续交接。LADRC 参数沿用 Position：Roll/Pitch/Yaw 的 `(b0, ωc, ωo)` 分别为 `(20,0.8,2.5)`、`(10,1.0,4.0)`、`(6,0.25,1.2)`，原算法角度残差上限各 ±0.5°；这是残差控制器边界，不是基座扰动幅值上限。[原生能力策略、厂家依据和回放](docs/control/native_capacity.md)。
 
-## Hardware, units and configuration
+## 产品规格、软件边界与安全
 
-| Item | Current implementation or setting |
-| --- | --- |
-| Mechanism | Six-axis 6PUS parallel platform; three-axis attitude stabilization task |
-| Sensors | Base and platform IMUs; six-axis position, raw force-related values and ADC feedback |
-| Drive | One UART owner; position mode `0x25=1`; target positions via `0x29` |
-| Position range | 0–2000 steps, intersected with actual read-back drive limits and existing geometry constraints |
-| Conversion | 1 step = 0.025 mm = 0.000025 m; 40 steps/mm |
-| HOME | Geometry configuration currently defines 1000 steps for each axis |
-| Software velocity cap | 17 mm/s for all axes, based on the LAF50-024D manufacturer's nominal **unloaded** speed; not a measured loaded maximum or demonstrated platform speed |
-| Control period | Nominal 20 ms; actual feedback intervals are checked |
-| Force representation | Per-axis zero-referenced `relative_raw`; absolute force in N is not calibrated |
-| Extra trajectory filter | Disabled in the saved configuration; UART velocity limiting retained |
+LAF50-024D 选型规格的最大推拉力为 **50 N**。主机按该规格将含保持偏置的绝对指令限制到 ±50 N，向内量化到 ±5098 g，约 ±49.9943 N。±100 N 传感器量程、80 N 堵转/自锁指标、int16 编码范围均不能替代正常目标力边界。
 
-The [geometry configuration](bone_ws/src/pus6_kinematics/config/6pus_geometry.yaml) maps raw steps to the IK length coordinate as `q[i] = 0.05 + (steps[i]-1000)*0.000025` m. Thus 0–2000 steps correspond to 0–50 mm of displacement from raw zero and 0.025–0.075 m in that model coordinate. These are different references, not two different actuator travels.
+**±5098 g 是本工程的主机指令边界，不是已经证实的固件自动 50 N 保护寄存器。** 手册的 `0x20` 是 mA 电流保护，`0x21/0x22` 是输出上限（表列 0–1000），不是以 N 或 g 表示的力钳位。启动时只读这些设置，不覆盖设备保护。g→N 是名义换算，不是六轴绝对受力标定；历史 Tare 也不能证明预载消失。[电机、传感器和寄存器依据](docs/hardware/native_force.md)。
 
-Adding force feedback does not change the mechanism, geometry or available workspace. The current compensation has no arbitrary 50 μm cap: its admissible offset follows the final position bounds. Real mechanical, kinematic and driver protections remain applicable; the software command range does not establish that every six-axis combination is kinematically feasible.
+当前保留的保护包括：
 
-The runtime loads [calibrated_config.json](bone_ws/scripts/research/force_position_control/calibrated_config.json). It stores independent `raw_zero` and signed `relative_scale` values for six axes and does not automatically tare on startup. Position-PID gains `kp/ki/kd` have units relative/m, relative/(m·s) and relative·s/m. `force_limit_relative` limits the demand; `admittance_m_per_relative_s` is the mapping coefficient `A`, in m/(relative·s); `correction_rate_m_s` limits correction velocity. The configuration is the authority for numerical values. Saved signs and scales are not a claim of completed physical direction or absolute-force calibration. The implementation also accepts a separately calibrated N configuration, but that is not the current relative mode.
+- **1500 mA** 共享电流基线；旧阶段的 500 mA 不代表当前三进程生效值。
+- 几何正常范围、合法命令范围与设备读回行程的交集，通常 **200–1800 steps**；实际位置和 IK 目标分别检查、分别记录，不取消机械边界。
+- 有效反馈、六轴位置时间戳（200 ms）、双 IMU 姿态时效（各 100 ms）、通信/写超时、故障码、Mode 3 及 `0x27` 读回检查。
+- Parent Lease、参考新鲜度和 Bridge 健康检查；运动写入不盲目重试。
+- 原异常 Pause、Mode 0 实测位置重锚和六轴退出确认；5000 g/s 只在原允许的健康反馈停止/恢复路径使用，不作用于正常主动力指令。
 
-## Build and run on the NUC
+Child 失效且已无法执行代码（例如 SIGKILL 或主机掉电）时，软件不能保证继续发送停止指令；报告必须允许 `exit_unconfirmed`。Mode 0 确认、Pause ACK、串口关闭和物理停止是不同事实。软件停止不能替代独立的现场停止手段。
 
-The commands below target the current NUC checkout on Ubuntu with ROS 2 Jazzy. This README-only update does not publish outstanding local runtime changes or the locally available startup script; it is not a claim that a fresh GitHub checkout contains those uncommitted files. See the [hardware and configuration guide](docs/research/6PUS_FORCE_POSITION_HARDWARE.md) for further operational details.
+## 长期运行与正常退出回 Home
 
-Build the independent workspace when needed:
+长期脚本自动加载 ROS 2 和本工程工作空间，默认三轴、持续运行；未加真实硬件选项时使用合成 IMU/Mock。真实运行中，固定 1 秒初始保持后持续 `stabilize`，不按 60 秒自动结束。每次使用独立目录，终端日志与完整记录分开保存。
+
+正常 Ctrl+C 的当前流程：停止参考流 → Child 安全停止原生力控 → **确认六轴 Mode 0 并回收三进程/关闭 IMU** → 复用独立 J7 HOME runner 重新取得电机串口 → 读取实际六轴位置 → 切换 **Servo Mode 1** → 50 Hz 五次平滑位置轨迹回 Home → 默认保持 2 秒 → 六轴 Pause、最终位置读回、关闭串口。
+
+Home 默认规划峰值 50 steps/s（1.25 mm/s），与正常 Mode 3 不限参考速度的策略无关。原 runner 使用有限轨迹长度和逐次通信超时，末端允许最大 5 steps 误差；异常/中断执行原 Pause。**它不是持续等待任意时长直至收敛，也没有独立全局壁钟回 Home 超时。当前 Home 后执行 Pause，未再次切换并确认 Mode 0；报告中的 Mode 0 是回 Home 之前力控退出的确认。**
+
+仅 `operator_stopped`、连续模式、六轴 Mode 0 已确认且无 Parent error 时允许自动 Home；故障、启动异常或停止未确认均跳过 Home。实现也把结果目录中的 `stop_request.json` 正常停止请求归为 `operator_stopped`。`--no-auto-home` 可显式禁用该动作。控制故障不会自动转入位置运动。[完整启停及异常说明](docs/operations/long_running.md)、[Home 定义与实现边界](docs/operations/home.md)。
+
+## Home 的配置来源
+
+Home 是工程的 **OPERATING_HOME**，六轴目标 `[1000,1000,1000,1000,1000,1000] steps`，不是自动寻找限位开关的机械回零，也不是 `STORAGE_PARK=[0]*6`。
+
+其来源为 [6pus_geometry.yaml](bone_ws/src/pus6_kinematics/config/6pus_geometry.yaml) 的 `actuator.operating_home_raw_steps`；[geometry_config.py](bone_ws/src/pus6_kinematics/pus6_kinematics/geometry_config.py) 校验该约定，共享 [safety.py](bone_ws/src/pus6_motor_driver/pus6_motor_driver/safety.py) 导出对应常量。当前 J7 runner 使用与之相同的显式 `HOME_TARGET` 元组，**不是运行时直接读取 YAML 的目标字段**。
+
+模型 Home 滑块坐标为每轴 0.05 m、平台名义高度约 0.132612268 m。原始步数映射为 `q_model = q_home_model + (steps - steps_home) × 0.000025 m`，不能把 1000 steps 直接解释成模型滑块 0.025 m。配置仍保留最终装配几何、零位与 IMU 外参待确认标记，不能写成已经完成外部精密标定。
+
+## 环境、编译和运行
+
+环境为原生 Ubuntu、ROS 2 Jazzy、Bash、Python 3；依赖本工程已有的 `rclpy`、NumPy、SciPy、PyYAML、Matplotlib、pyserial 和 H30 IMU 包。真实设备默认电机端口 `/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0`、921600 baud；IMU 端口、话题、安装坐标沿用现有 H30 配置，勿同时启动另一个电机控制入口占用 RS485。
+
+已有工作空间可进行相关包构建（首次构建依赖链见[开发说明](docs/development/build.md)）：
 
 ```bash
-cd /home/lyapunov/6pus_bone_drill_torque_control/bone_ws
+cd /home/lyapunov/6pus_bone_drill_force_control/bone_ws
 source /opt/ros/jazzy/setup.bash
-colcon --log-base log/force_position build --base-paths src \
-  --build-base build/force_position --install-base install/force_position
+colcon build --symlink-install --packages-up-to pus6_force_control
 ```
 
-Start the real Route A chain:
+仅检查启动环境和 CLI，**不启动传感器、ROS 节点或电机进程**：
 
 ```bash
-cd /home/lyapunov/6pus_bone_drill_torque_control
-bash bone_ws/scripts/run_force_position_feedback_pid.sh
+/home/lyapunov/6pus_bone_drill_force_control/bone_ws/scripts/run_force_dual_imu_native_pid.sh --software-check
 ```
 
-The script loads Jazzy and this workspace's `install/force_position/local_setup.bash`, then runs the source runtime with `/usr/bin/python3` and the saved configuration. It starts both IMU inputs and the independent UART owner. It may select position Servo at the measured current position; it does not automatically return HOME or introduce a startup HOME motion. Do not run another process that owns the same motor UART. An optional `--duration 10` requests a normal stop after ten seconds.
-
-### Monitoring and logs
-
-In another terminal, load the same environment and inspect the required topics:
+真实硬件长期三轴主动稳定启动命令（会写电机，正常 Ctrl+C 后会继续位置回 Home）：
 
 ```bash
-cd /home/lyapunov/6pus_bone_drill_torque_control
-source /opt/ros/jazzy/setup.bash
-source bone_ws/install/force_position/local_setup.bash
-ros2 topic echo --full-length /force_position/attitude
-# Run the following commands separately or in additional terminals:
-ros2 topic echo /force_position/position_feedback
-ros2 topic echo /force_position/relative_force
-ros2 topic echo /force_position/raw_force_feedback
-ros2 topic echo --full-length /research_force_position/diagnostics
-ros2 topic echo --full-length /force_position/uart_state
+/home/lyapunov/6pus_bone_drill_force_control/bone_ws/scripts/run_force_dual_imu_native_pid.sh --hardware --hardware-qualified --start-imus
 ```
 
-Attitude diagnostics contain `base_relative_rpy_rad` and `platform_relative_rpy_rad` in Roll/Pitch/Yaw order, in radians relative to the captured reference. Controller diagnostics include `desired_m`, `actual_m`, `error_m`, `force_cmd_relative`, `force_actual_relative`, `force_error_relative`, `correction_m`, `position_command_m` and `shaped_command_m`. UART state supplies actual feedback and fault codes; `position_acknowledged` log entries contain the transmitted step targets and acknowledgements.
+启动时保持基座稳定以捕获初始参考，之后实际扰动以 Base IMU 记录为准；停止时按一次 Ctrl+C 并留意 `MODE0`、`AUTO_HOME_STATE`、`AUTO_HOME_SUMMARY`。故障退出会报告具体原因并跳过 Home。回 Home 中再次 Ctrl+C 请求中断并走原停止路径，不能把它当作已经完成回 Home。
 
-Logs are saved under `results/force_position/<timestamp>/`, printed as `LOG_DIR` at startup. Each run contains `config.json`, `telemetry.jsonl`, `h30_base.log` and `h30_platform.log`. Force values keep their `relative_raw` label; host receipt timestamps must not be interpreted as synchronized device sampling times.
+## 日志、验证证据与当前局限
 
-### Normal shutdown and faults
+结果目录为 `results/mode3_dual_imu/run_*`（真实）或 `dry_run_*`（Mock）；控制台日志为 `results/mode3_dual_imu/console/native_*.log`。`tracking.jsonl` 保存目标/实际 FK、IMU、PI-D、六轴力、电流、模式和时间信息；`dual_imu_report.json`、`force_shutdown.json`、Child/Parent/Bridge 记录说明控制和退出过程；自动 Home 另存 `home_recovery.json`。力控报告的 `hardware_write_count` 统计力控 Child 的写事务，**不包含后续独立 Home runner 的位置写入**。
 
-Use Ctrl+C in the running terminal, allow the requested duration to finish, or publish:
+| 已有证据 | 可支持的结论及边界 |
+|---|---|
+| Z 往返、五个单自由度实验 | 已有 Mode 3 位姿运动和返回记录；Yaw 曾分次完成，不能说五轴全部一次成功 |
+| 六自由度组合轨迹 `run_20261106_143627_158172` | `motion_complete`、Mode 0；Yaw 运动 RMSE 0.319°、最大约 1.099°，存在跟踪误差 |
+| 原生能力策略文档与历史回放 | 记录 39 项针对性软件测试通过；取消实验削顶后，固定历史末帧可产生更大目标力，不证明真机响应必然改善 |
+| 三进程 Mock 与启动竞态修复 | 证明软件协议、启动交接、故障恢复路径；不等同实机长时稳定性 |
+| 11-07 14:40 / 15:24 / 16:15 三次真实记录 | 均记录 `operator_stopped`、六轴 Mode 0 及串口关闭；不能当作完成指定时长或稳定精度验收 |
+| 16:15 记录中的自动 Home | 真实报告与控制台均记录回到 `[999,998,998,1000,1000,1001]`、最大误差 2 steps、Pause 成功；仅支持这一次正常返回记录，不外推所有异常/重复退出情形 |
 
-```bash
-ros2 topic pub --once -w 1 /force_position/stop std_msgs/msg/Empty '{}'
-```
+16:15 主动阶段仅约 13.045 s，自动分析判定 `NOT_ESTABLISHED`；三轴世界姿态误差 RMS 约 `[1.813,1.541,1.215]°`。不能据正常退出和 Home 成功宣称 60 秒、大幅度三轴扰动或长期稳定精度已经通过。目标力与实际反馈力差异、动态跟踪和机械耦合仍需结合后续实测研究，固件 50 N 自动钳位及完整物理受力标定仍未证实。
 
-Normal shutdown stops the current control stream, reads actual six-axis positions and generates a coordinated quintic HOME trajectory using the existing position Servo. UART communication and feedback remain alive throughout. After the final HOME targets, two consecutive status queries must confirm all six axes within the existing ±5-step HOME tolerance. The runtime then sends one pause command (`0x1A=1`) per axis, checks the responses and only then closes communication and exits. The log sequence is `home_started → home_confirmed → pause_complete → uart_stopped`.
-
-Communication failures, invalid/stale position feedback and drive faults skip or abort HOME and enter the existing fault-pause path. Missing pause acknowledgements are reported as failures, not successful stops. Shutdown HOME/Pause has been checked with Mock software tests; those results do not establish real-hardware return accuracy or stopping performance.
-
-## Research evaluation
-
-The objective is to determine whether measured force changes improve three-axis attitude stabilization over the original position-control baseline. Compare static holding, separate Roll/Pitch/Yaw disturbances, two-axis and three-axis combinations, and continuous base disturbances. Use recorded Base-IMU curves to assess comparable inputs; manual disturbances are not automatically identical.
-
-Report platform attitude-error RMS, Peak and P95 per axis, recovery time with an explicit criterion, and disturbance transmission from base to platform. Use six-axis position errors, relative force, PID demands, force errors, corrections, final commands, measured positions and saturation/protection events to explain the response. The intended outputs are control diagrams and models, paired Base/Platform response curves, relative-force and correction curves, quantitative comparisons, and an account of the method's mechanism, useful conditions and performance limits. Improvement must be established by real comparative data, not assumed from an additional feedback loop.
-
-## Implementation map
-
-- [Dual-IMU attitude processing and IK](bone_ws/scripts/research/force_torque_control/imu_chain.py).
-- [Position-error PID and dynamic mapping](bone_ws/scripts/research/force_position_control/controller.py).
-- [ROS feedback pairing and corrected targets](bone_ws/scripts/research/force_position_control/ros_node.py).
-- [Independent runtime and UART ownership](bone_ws/scripts/research/force_position_control/runtime.py).
-- [Position transport and normal HOME/Pause](bone_ws/scripts/research/force_position_control/uart_driver.py).
-- [Hardware operation and calibration guide](docs/research/6PUS_FORCE_POSITION_HARDWARE.md).
-
-The original position-control repository remains independent. This documentation does not modify its algorithms or the research runtime. No repository-wide license has been established; component-level notices still apply.
+本轮只整理 Markdown，没有构建、重跑控制测试、连接硬件或执行实验。上述真机/Mock/测试结论均来自已有记录。[实验与证据索引](docs/experiments/README.md)列出原目录；[全部 Markdown 分类清单](docs/development/markdown_catalog.md)和[迁移对照](docs/development/documentation_map.md)保留历史入口。

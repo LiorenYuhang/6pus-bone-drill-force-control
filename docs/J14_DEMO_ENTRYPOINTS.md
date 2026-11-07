@@ -1,5 +1,3 @@
-# J14 Demo operation guide
+# 文档已归类
 
-The guide is maintained at [docs/j14/J14_DEMO_ENTRYPOINTS.md](./j14/J14_DEMO_ENTRYPOINTS.md).
-
-操作指南已整理至上述位置；此入口保留历史链接兼容性。
+正文已迁至[归类后的文档](archive/position_reference/J14_DEMO_ENTRYPOINTS.md)。此页仅保留旧引用入口，避免改写冻结证据或程序中的路径。
